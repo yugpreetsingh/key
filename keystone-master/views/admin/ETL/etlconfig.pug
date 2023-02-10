@@ -1,0 +1,142 @@
+extends ../../layouts/master.pug
+
+block content
+    div(class="etlconfig")
+        h2.d-flex.justify-content-between.flex-column.flex-sm-row
+            | Please enter the ETL details below
+            //- a.mt-3.mt-sm-0(href='/etlconfig/getconfig',class="btn btn-dark") Get Etl Config
+        form#etldata
+            
+
+
+            .row.mb-3
+                .col-4
+                    label(for='etldomain') ETL domain
+                .col-8
+                    input#ETLdomain.form-control(type='text' aria-describedby='domainhelp' name='etldomain' placeholder='www.amazon.in, www.flipkart.com, www,grofers.com etc' autocomplete="off")
+                    small#emailHelp.form-text.text-muted
+
+            .row.mb-3
+                .col-4
+                    label(for='etltype') ETL type
+                .col-8
+                    input#ETLtype.form-control(type='text' name='etltype' placeholder='keywords, customasin etc.' autocomplete="off")
+
+            .row.mb-3
+                .col-4
+                    label(for='etlthreshold') ETL threshold (in seconds)
+                .col-8
+                    input#ETLthreshold.form-control(type='text' name='etlthreshold' placeholder='Enter ETL threshold value in seconds' autocomplete="off")
+            .row.mb-3
+                .col-4
+                    label(for='prefectServerName') Prefect server name
+                .col-8
+                    select(class="form-select" name='prefectservername' id='prefectservername' onchange="showDiv(this.value); resetOptionsValue('projectname'); getProjectNames(this.value)" autocomplete="off")
+                        option(value="" disabled hidden selected) Select Prefect server
+
+            .row.mb-3#ETLprojectname
+                .col-4
+                    label(for='etlproject') ETL project name
+                .col-8
+                    select(name="projectname" id="projectname" class="form-select project-name" onclick="resetOptionsValue('etlflowname'); getFlowNames(this.value)" autocomplete="off")
+            
+            .row.mb-3#ETLflowname
+                .col-4
+                    label(for='etlflowname') ETL flow name
+                .col-8
+                    select(name="etlflowname" id="etlflowname" class="form-select flow-name")
+            
+            .row.mb-3#ETLparserpipeline
+                .col-4
+                    label(for='etlparserpipeline') ETL parser pipeline
+                .col-8
+                    input.form-control.parser-pipeline(type='text' name='etlparserpipeline' id='etlparserpipeline' placeholder='Enter ETL parser pipeline' autocomplete="off")
+
+            .row.mb-3#ETLpagetype
+                .col-4
+                    label(for='etlpagetype') ETL page type(if applicable)
+                .col-8
+                    input.form-control.page-type(type="text", name="etlpagetype", id="etlpagetype", placeholder="Enter page type. Generally  applicable for search (e.g., grocery, serp, pantry, fresh). If NA, enter 'undefined'.", autocomplete="off")
+            
+            .row.mb-3#schemaName
+                .col-4
+                    label(for='schemaname') Schema name
+                .col-8
+                    input.form-control.schema-name(type='text' name='schemaname' id='schemaname' placeholder='Enter schema name' autocomplete="off")
+            
+            .row.mb-3#tableName
+                .col-4
+                    label(for='tablename') Table name
+                .col-8
+                    input.form-control.table-name(type='text' name='tablename' id='tablename' placeholder='Enter table name' autocomplete="off")
+
+            .row.mb-3#etlParameter
+                .col-4
+                    label(for='etlparameter') ETL Parameters
+                .col-8
+                    textarea.form-control.schema-name(rows=10, name='etlParameter' id='etlparameter' placeholder='Enter ETL parameter (a valid JSON object)' autocomplete="off")
+            
+            .row.mb-3#etlContext
+                .col-4
+                    label(for='etlcontext') ETL Context
+                .col-8
+                    textarea.form-control.table-name(rows=10, name='etlContext' id='etlcontext' placeholder='Enter ETL context (a valid JSON object)' autocomplete="off")
+
+            .row
+                .col-4 &nbsp;
+                .col-8
+                    button.btn.btn-primary(type='submit' id='etlsubmit') Submit
+    
+    script.
+        //- Get the list of all project names from prefect
+        $(document).ready(getPrefectServers());
+
+        document.getElementById("ETLflowname").style["display"] = "none";
+        document.getElementById("ETLparserpipeline").style["display"] = "none";
+
+        const etlform = document.getElementById("etldata")
+
+        etlform.onsubmit = async (event) => {
+            event.preventDefault();
+
+            let domain = document.getElementById("ETLdomain").value;
+            let type = document.getElementById("ETLtype").value;
+            let threshold = parseInt(document.getElementById("ETLthreshold").value);
+            let projectName = document.getElementById("projectname").value;
+            let flowName = document.getElementById("etlflowname").value;
+            let etlParserPipeline = document.getElementById("etlparserpipeline").value;
+            let etlPageType = document.getElementById("etlpagetype").value;
+            let schemaName = document.getElementById("schemaname").value;
+            let tableName = document.getElementById("tablename").value;
+            let etlParameter = document.getElementById("etlparameter").value;
+            let etlContext = document.getElementById("etlcontext").value;
+            let prefectServerId = document.getElementById("prefectservername").value;
+
+            function isJson(item) {
+                if(item.length!==0){
+
+                    item = typeof item !== "string" ? JSON.stringify(item) : item;
+
+                    try {
+                        item = JSON.parse(item);
+                    } catch (e) {
+                        return false;
+                    }
+
+                    if (typeof item === "object" ) {
+                        return true;
+                    }
+
+                    return false;
+                }else{
+                    return true;
+                }
+            }
+
+            let validETLParameter = isJson(etlParameter);
+            let validETLContext = isJson(etlContext);
+
+            if(validETLContext && validETLParameter){
+                addEtlConfig(domain,type,threshold,projectName,flowName,etlParserPipeline,etlPageType,schemaName,tableName,etlParameter,etlContext,prefectServerId);
+            }
+        };

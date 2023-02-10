@@ -1,0 +1,67 @@
+extends ../layouts/master.pug
+
+block content
+    h2.d-flex.flex-column.flex-sm-row.justify-content-between
+        | List of Clients/Select Jobs
+        //- a(href="/clients/addNew",class="btn btn-primary") Add New Client
+        a.btn.btn-dark.mt-3.mt-sm-0(data-bs-toggle="modal" data-bs-remote="add.pug" href="#addClients" role="button") Add New Client
+    //- h3 Select a Client
+
+    if clients.length > 0
+        .table-responsive(style="max-height:500px;overflow:auto")
+            table(class="table table-sm")
+                thead(class="thead-light")
+                    tr
+                        th(scope="col") #
+                        th(scope="col") Name
+                        th(scope="col") Jobs
+                        th(scope="col") Latest 5 Runs
+
+                tbody
+                - let i = 0
+                each client in clients
+                    - i = i+1
+                    tr
+                    
+
+                        th(scope="row") #{i}
+                        td
+                            //- a(href=`/jobs/${client._id}`) #{client.name}
+                            a(href=`/jobs/${client.id}`) #{client.name} (#{client.id})
+                        td(nowrap) #{client.numJobs}
+                        td
+                            if client.batches.length
+                                each batch in client.batches
+                                        - let finalDate = moment.tz(batch.createdAt,timezone)
+                                        - finalDate =  finalDate.unix()
+                                        //- - let day1 =  moment.tz(batch.createdAt,timezone).format('dddd')
+                                        - let date2 = moment(batch.createdAt).fromNow()
+                                        a(href=`/jobs/${client.id}/${batch.jobId}/results/${batch._id}`,data-toggle="tooltip",data-placement="bottom",title="See Results") #{batch.job[0].name} &bull;#{date2}
+                                        small 
+                                            span(class = "time", data-finalDate = `${finalDate}`)
+                                            
+                                        br
+                            else 
+                                p Never
+                        
+        //- a(href="/clients/addNew",class="btn btn-primary") Add New Client
+
+    else
+        p No clients available
+        a(href="/clients/addNew",class="btn btn-primary") Add New Client
+
+    script.
+        $('#addClients').on('show.bs.modal', function(e) {
+            var button = $(e.relatedTarget);
+            var modal = $(this);
+            modal.find('.modal-body').load(button.data("remote"));
+        });
+
+    #addClients.modal.fade(tabindex='3' aria-labelledby='addClients' aria-hidden='true')
+        .modal-dialog.modal-xl
+            .modal-content
+                .modal-body
+                    //| hi
+                    include ../client/add.pug
+                .modal-footer
+                    button.btn.btn-secondary(type='button' data-bs-dismiss='modal') Close

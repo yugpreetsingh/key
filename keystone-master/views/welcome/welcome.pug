@@ -1,0 +1,10 @@
+extends ../layouts/master.pug
+
+block content
+    div(class="welcome mx-auto text-center")
+        h2 Welcome to Keystone
+        p Please Login to continue
+        br
+        br
+        a(href="/auth/login")
+            button(type="button" class="btn btn-lg btn-primary") Login

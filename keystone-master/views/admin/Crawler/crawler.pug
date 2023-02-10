@@ -1,0 +1,159 @@
+extends ../../layouts/master.pug
+
+block content
+
+        h4  Click on the  button below to fill the Domain associated information.
+            br
+            br
+            //- div(class = "form" style = "font-weight:normal;font-size:18px;background-color:#fafafa;" action=`/registerdomain`,method="post")
+            
+            p  
+               
+               button(class="btn btn-dark" id="domainButton" style = "width:160px;margin-left:15.5em;") Domain
+            br
+            form(id="domainForm" action="/admin/registerdomain",method="POST", style = "font-weight:normal;font-size:18px;")
+                div
+                    label(for="crawlerType",class="col-xs-4" ) Select Type of Crawler
+                        select(name="crawlerType",id="sourceType",class="form-select",onchange="showSourceType(this.value)",autocomplete="off" style = "margin-left:14.4em; margin-top:-1.4em;width:20.3em")
+                            option(value="") -- Select Source Type --
+                            option(value="generic",selected=source == "generic") Generic Open URL for Amazon Bestsellers
+                            option(value="categories",selected=source == "categories") Categories Crawling (except Amazon Bestsellers)
+                            option(value="keywords",selected=source == "keywords") Keywords
+                            option(value="customasin",selected=source == "customasin") Custom ASINs
+                            option(value="searchbyasin",selected=source == "searchbyasin") Search Products By ASINs
+                            option(value="reviews",selected=source == "reviews") Reviews
+                            option(value="amazonseller",selected=source == "amazonseller") Amazon Seller Info (Temp - War Room 01 May 2021 Sale)
+                            option(value="flipkartseller",selected=source == "flipkartseller") Flipkart Seller Info (Temp - War Room 01 May 2021 Sale) 
+                    br
+                    br
+                    label(for='domainName',class= "col-xs-4" ) Enter Domain to Add
+                    input(class = "form-group" type='text' name='domainName' autocomplete="off" style = "margin-left:3.3em;width:18em;" placeholder = "eg: WWW.AMAZON.CO.JP")
+                    br
+                    br
+                    label(for='domainNickName',class="col-xs-4")  Enter Domain Nickname
+                    input(class = "form-group" type='text' name='domainNickName' autocomplete="off"  style = "margin-left:1.9em;width:18em;" placeholder ="eg: Amazon.co.jp (Japan)" )
+                    br
+                    br
+                    label(for='queue',class="col-xs-4") Enter Queue Name
+                    input(class = "form-group" type='text' name='queue'  autocomplete="off"  style = "margin-left:4.2em;width:18em;" placeholder = "eg: amazon.serp.fetcher.native")
+                    br
+                    br
+                    label(for="browserInterface",,class="col-xs-4") Enter Browser Interface
+                        p(style = "color:red;") space separated
+                    input(class = "form-group" type='text' name='browserInterface' autocomplete="off"  style = "margin-left:2.4em;width:18em;" placeholder ="eg: desktop" )
+                    p(style = "color:#944BB8") [Max 2 Browser Interfaces- desktop mobile] 
+                    br
+                    br
+                    input(type="submit",value="Add Domain",class="btn btn-danger" style = "margin-left:18em;width:160px;") 
+        h4  Click on the  button below to fill the Parser Pipeline information.
+        
+            br
+            br
+            p 
+                button(class="btn btn-dark" id="parserButton" style = "width:160px;margin-left:15.5em;") Parser 
+            br
+            form(action="/admin/registerpipeline", id="parserForm" method="POST", style = "font-weight:normal;font-size:18px;")
+                div
+                    label(for='genericLabel',class="col-xs-4" ) Select Label for Type of Job
+                        select(name='genericLabel',id="optgroup",class="form-select",onchange="showSourceType(this.value)",autocomplete="off" style = "margin-left:14.6em; margin-top:-1.4em;width:20.3em")
+                            option(value="") -- Select Generic Label / Optgroup --
+                            - let optgroups = []
+                            each optgroup in genericLabel
+                                - optgroups.push(optgroup.genericLabel)
+                            - optgroups.sort()
+                            each crawler_optgroup in optgroups 
+                                each doc in genericLabel
+                                    if crawler_optgroup == doc.genericLabel
+                                        option(value= `${doc._id}` selected=source == `${doc._id}`) #{doc.genericLabel}
+                            
+
+                            
+                            //- option(value="Amazon Generic" selected=source == "Amazon Generic") Amazon Generic
+                            //- option(value="Blibli Generic" selected=source == "Blibli Generic") Blibli Generic
+                            //- option(value="Carrefour Generic" selected=source == "Carrefour Generic") Carrefour Generic
+                            //- option(value="Flipkart Generic" selected=source == "Flipkart Generic") Flipkart Generic
+                            //- option(value="Firstcry Generic" selected=source == "Firstcry Generic") Firstcry Generic
+                            //- option(value="Grofers Generic" selected=source == "Grofers Generic") Grofers Generic
+                            //- option(value="Lazada Generic" selected=source == "Lazada Generic") Lazada Generic
+                            //- option(value="Myntra Generic" selected=source == "Myntra Generic") Myntra Generic
+                            //- option(value="Nykaa Generic" selected=source == "Nykaa Generic") Nykaa Generic
+                            //- option(value="Paytm Mall Generic" selected=source == "Paytm Mall Generic") Paytm Mall Generic
+                            //- option(value="Rakuten Generic" selected=source == "Rakuten Generic") Rakuten Generic
+                            //- option(value="Shopee Generic" selected=source == "Shopee Generic") Shopee Generic
+                            //- option(value="Tata CLiQ Generic" selected=source == "Tata CLiQ Generic") Tata CLiQ Generic
+                            //- option(value="Tokopedia Generic" selected=source == "Tokopedia Generic") Tokopedia Generic 
+                            //- option(value="Walmart Generic" selected=source == "Walmart Generic") Walmart Generic
+                    br
+                    br
+                    label(for='jobType',class="col-xs-4" ) Select Job Type (UI)
+                        select(name='jobType',id="jobType",class="form-select",style = "margin-left:14.6em; margin-top:-1.4em;width:20.3em")
+                            option(value="") -- Select Job Type --
+                            option(value="Keyword Search Results / SERP" selected=source == "Keyword Search Results / SERP") Keyword Search Results / SERP 
+                            option(value="Custom ASINs / URLs product Details" selected=source == "Custom ASINs / URLs product Details") Custom ASINs / URLs product Details 
+                            option(value="Search Product Details by ASIN" selected=source == "Search Product Details by ASIN") Search Product Details by ASIN  
+                            option(value="Fetch Reviews by ASIN / Unique Identifier" selected=source == "Fetch Reviews by ASIN / Unique Identifier") Fetch Reviews by ASIN / Unique Identifier 
+                            option(value="Categories & Top Products" selected=source == "Categories & Top Products") Categories & Top Products  
+                            option(value="Categories by URL" selected=source == "Categories by URL") Categories by URL 
+                            option(value="Get Product Information" selected=source == "Get Product Information") Get Product Information
+                            option(value="Get Seller Information" selected=source == "Get Seller Information") Get Seller Information
+                            option(value="Fetch Reviews by Item ID and Product ID" selected=source == "Fetch Reviews by Item ID and Product ID") Fetch Reviews by Item ID and Product ID 
+                            option(value="amazonseller",selected=source == "amazonseller") Amazon Seller Info (Temp - War Room 01 May 2021 Sale)
+                            option(value="flipkartseller",selected=source == "flipkartseller") Flipkart Seller Info (Temp - War Room 01 May 2021 Sale) 
+                    br
+                    br                                    
+                    label(for='crawlerType',class="col-xs-4") Select Type of Crawler
+                        select(name='crawlerType',id="sourceType",class="form-select",onchange="showSourceType(this.value)",autocomplete="off" style = "margin-left:14.6em; margin-top:-1.2em;width:20.3em")
+                            option(value="") -- Select Source Type --
+                            option(value="generic",selected=source == "generic") Generic Open URL for Amazon Bestsellers
+                            option(value="categories",selected=source == "categories") Categories Crawling (except Amazon Bestsellers)
+                            option(value="keywords",selected=source == "keywords") Keywords
+                            option(value="customasin",selected=source == "customasin") Custom ASINs
+                            option(value="searchbyasin",selected=source == "searchbyasin") Search Products By ASINs
+                            option(value="reviews",selected=source == "reviews") Reviews
+                            option(value="amazonseller",selected=source == "amazonseller") Amazon Seller Info (Temp - War Room 01 May 2021 Sale)
+                            option(value="flipkartseller",selected=source == "flipkartseller") Flipkart Seller Info (Temp - War Room 01 May 2021 Sale)
+                    br
+                    br
+                    label(for='projectName',class="col-xs-4") Enter Project Name
+                    input(type='text' name='projectName' autocomplete="off" style = "margin-left:4.3em;width:18em;" placeholder ="eg: amazon_serp_fetcher" )
+                    br
+                    br
+                    label(for='spiderName',class="col-xs-4")  Enter Spider Name
+                    input(type='text' name='spiderName' autocomplete="off" style = "margin-left:4.6em;width:18em;" placeholder ="eg: serp_fetcher" )
+                    br
+                    br
+                    label(for='collectionName',class="col-xs-4") Enter Collection(s)
+                        p(style = "color:red;") space separated
+                        
+                    input(type='text' name='collectionName' autocomplete="off" style = "margin-left:4.9em;width:18em;" placeholder = "eg: serp-pages serp-products")
+                    p(style = "color:#944BB8") [Max 3 collections]
+                    input(type="submit",value="Add Parser Pipeline",class="btn btn-danger" style = "margin-left:18em;width:160px;") 
+                    br
+                    br
+        h4  Click on the  button below to fill the Generic Label information.
+        
+            br
+            br
+            p 
+                button(class="btn btn-dark" id="genericButton" style = "width:160px;margin-left:15.5em;") Generic Label 
+            br
+            form(action="/admin/registerLabel", id="genericForm" method="POST", style = "font-weight:normal;font-size:18px;")
+                div
+                    label(for='genericLabel',class="col-xs-4") Enter Generic Label
+                    input(type='text' name='genericLabel' autocomplete="off" style = "margin-left:4.3em;width:18em;" placeholder ="eg: Amazon Generic" )
+                    br
+                    br
+                    input(type="submit",value="Add Generic Label",class="btn btn-danger" style = "margin-left:18em;width:160px;" ) 
+        script. 
+            $(document).ready(function() {
+                $("#domainButton").click(function() {
+                    $("#domainForm").toggle();
+                });
+                $("#parserButton").click(function() {
+                    $("#parserForm").toggle();
+                });
+                $("#genericButton").click(function() {
+                    $("#genericForm").toggle();
+                });
+
+            });

@@ -1,0 +1,22 @@
+[data-toggle="textavatar"],
+.textavatar {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: #2697cc;
+	border-radius: 50%;
+	color:white
+}
+
+[data-toggle="textavatar"] abbr,
+.textavatar abbr {
+	font-weight: bold;
+	line-height: 1;
+	letter-spacing: .1em;
+	text-indent: .1em;
+	text-decoration: none;
+
+	/* Avoid Bootstrap css*/
+	border-bottom: 0 !important;
+	cursor: default !important;
+}

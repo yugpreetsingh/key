@@ -1,0 +1,18 @@
+extends ../layouts/master.pug
+
+block content
+    h2 Login
+
+    form(action="/auth/login",method="post")
+        table(border=0,cellpadding=10)
+            tr
+                td E-mail address
+                td
+                    input(type="text",name="email", value="")
+            tr
+                td Password
+                td
+                    input(type="password",name="password", value="")
+            tr
+                td(colspan=2)
+                    input(type="submit",value="Login",class="btn btn-primary")

@@ -1,0 +1,24 @@
+extends ../layouts/master.pug
+
+block content
+        h2 Monitoring
+
+        h5 
+            b Failed Prefect Jobs
+
+        p
+            | The following jobs are the ones that failed during the specified time period in Prefect.
+            br
+            | Note that if the Pipeline ID was successful even once, then it will not display the job below.
+
+        p
+            |To use this, have a look at the table below. Then go to their pipeline page and check if we have data. Then go to the 
+            br
+            |job's Prefect Flow Run page and try to troubleshoot and reach out to the respective ETL developer.
+        
+        p
+            |Our goal is to have the list below as ZERO.
+
+        p
+            h5 Table 
+            h6 <i>Coming Soon...</i>

@@ -1,0 +1,309 @@
+extends ../layouts/master.pug
+
+block content
+
+    script(src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js")
+    script(src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js")
+    script(src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js")
+    script(src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js")
+    link(rel='stylesheet', href='https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css')
+    link(rel="stylesheet", href="https://cdn.datatables.net/buttons/1.6.1/css/buttons.dataTables.min.css")
+
+    
+    
+    h2.justify-content-between
+        div
+            | Results for 
+            span.text-danger
+            a(href=`/jobs/${clientDetails.id}` title=`See all ${clientDetails.name} jobs` ,data-bs-toggle="tooltip",data-bs-placement="bottom") #{clientDetails.name} 
+            | → "#{jobStatus.jobId.name}"
+        div.mt-3.mt-sm-0
+            br
+            a(href=`/jobs/${clientDetails.id}/${jobStatus.jobId._id}/details`,class="btn btn-secondary") Back 
+            //- input(type="button",value="Refresh",class="btn btn-dark",onclick="location.reload()")
+    .table-responsive.mb-3
+        table(class="table table-sm")
+            tr
+                th(scope="row",width="25%") Batch Identifer
+                td(width="75%") #{jobStatus._id}
+            tr
+                - let date = moment.tz(jobStatus.createdAt,timezone)
+                - date =  date.unix()
+                th(scope="row") Batch Started On
+                td(class = "time", data-finalDate = `${date}`)
+            tr
+                th(scope="row") Associated With Job
+                td 
+                    //- a(href=`/jobs/${clientDetails._id}/${jobStatus.jobId._id}/details`)
+                    a(href=`/jobs/${clientDetails.id}/${jobStatus.jobId._id}/details`)
+                        strong #{jobStatus.jobId.name}
+                    br
+                    small (Job Identifier: #{jobStatus.jobId._id})
+            tr
+                th(scope="row") Source
+                td.allItemsTd
+                    
+                    if jobStatus.source.type == "generic" || jobStatus.source.type == "categories"
+                        | #{jobStatus.source.type}
+                        div 
+                            strong Total URLs Searched: #{jobStatus.source.data.length}
+                            br
+                            strong URL(s) to Crawl
+                        div#allItems.showFewItems()
+                            each item in jobStatus.source.data
+                                div(class="d-inline-block")
+                                    span(class="badge badge-pill bg-success ") #{item} 
+                                    span(class="text-light") • 
+                        a#showAllItems.btn.btn-link.btn-sm(role="button" data-bs-toggle="modal" data-bs-target="#allItemsModal1") Show All Items 
+                    else if jobStatus.source.type != "generic" || jobStatus.source.type != "categories"
+                        | #{jobStatus.source.type} • Domain: #{jobStatus.source.domain} with #{jobStatus.source.browser}
+                        div 
+                            strong Total Items Searched: #{jobStatus.source.data.length}
+                        div#allItems.showFewItems()
+                            each item in jobStatus.source.data
+                                div(class="d-inline-block")
+                                    span(class="badge badge-pill bg-success ") #{item} 
+                                    span(class="text-light") • 
+                        a#showAllItems.btn.btn-link.btn-sm(role="button" data-bs-toggle="modal" data-bs-target="#allItemsModal1") Show All Items
+                    else
+                        | #{jobStatus.source.type} &bull; #{jobStatus.source.data[0]}
+
+            tr
+                th(scope="row") City (if applicable)
+                td
+                    if jobStatus.source
+                        if jobStatus.source.city
+                            each pin,city in jobStatus.source.city
+                                span.text-wrap.text-break #{city} - #{pin} • 
+                        else 
+                            | NA
+                    else 
+                        | NA
+
+            tr
+                th(scope="row") Search Type (if applicable)
+                td
+                    if jobStatus.source
+                        if jobStatus.source.page_type
+                            | #{jobStatus.source.page_type} 
+                        else 
+                            | NA
+                    else 
+                        | NA
+
+            tr
+                th(scope="row") Proxy Type
+                td #{jobStatus.source.proxytype}
+            
+            tr
+                th(scope="row") Crawling Language
+                td #{jobStatus.source.crawlinglanguage}
+            tr
+                th(scope="row") Batch Size
+                td #{jobStatus.source.batchsize}
+            tr
+                th(scope="row") Job Type
+                td 
+                    if jobStatus.source.type === "customasin" && jobStatus.jobType === "ContentScore"
+                        | #{jobStatus.jobType}
+                    else if jobStatus.source.type === "customasin" && jobStatus.jobType !== "ContentScore"
+                        | Regular
+                    else
+                        | NA
+
+            tr
+                th(scope="row") Seller Information
+                td #{jobStatus.source.sellerinfo}
+            tr
+                th(scope="row") Get Sub-categories
+                td
+                    if jobStatus.source
+                        | #{jobStatus.source.recursive}
+                    else 
+                        | NA
+
+            tr
+                th(scope="row") Parser Pipeline
+                td #{jobStatus.parser.pipeline} • #{jobStatus.parser.startingSpider}
+            tr
+                th(scope="row") Added Through
+                td 
+                    strong #{jobStatus.addedFrom}
+                    br
+                    if jobStatus.addedBy
+                        span By #{jobStatus.addedBy.name} (#{jobStatus.addedBy.email})
+
+    //- a(href=`/jobs/${clientDetails._id}/${jobStatus.jobId._id}/details`,class="btn btn-secondary") Back to Job "#{jobStatus.jobId.name}"
+    //- .mb-3
+    //-     a(href=`/jobs/${clientDetails.id}/${jobStatus.jobId._id}/details`,class="btn btn-secondary") Back to Job "#{jobStatus.jobId.name}"
+    //-     span  
+    //-         input(type="button",value="Refresh",class="btn btn-secondary",onclick="location.reload()")
+
+    //- hr
+
+    h2 Load Result Set for
+    each collection in jobStatus.jobId.parser.collections
+        if collection == collectionName
+            //- a(href=`/jobs/${clientDetails._id}/${jobStatus.jobId._id}/results/${jobStatus._id}/${collection}`,class="btn btn-lg btn-info") ✔ #{collection}
+            a(href=`/jobs/${clientDetails.id}/${jobStatus.jobId._id}/results/${jobStatus._id}/${collection}`,class="btn btn-lg btn-primary") ✔ #{collection}
+            span  
+        else
+            //- a(href=`/jobs/${clientDetails._id}/${jobStatus.jobId._id}/results/${jobStatus._id}/${collection}`,class="btn btn-lg btn-primary") #{collection}
+            a(href=`/jobs/${clientDetails.id}/${jobStatus.jobId._id}/results/${jobStatus._id}/${collection}`,class="btn btn-lg btn-primary") #{collection}
+            span  
+    p
+        div
+            input(type="button",value="Refresh",class="btn btn-dark",onclick="location.reload()")
+    if collectionName
+        - var firstResult = keys || undefined;
+        - let i = 1
+        
+        div
+            div.row.justify-content-between
+                div.col
+                    .card.card-body.bg-light
+                        strong Total Records: #{totalRecords} 
+                        br
+                        a(class="btn btn-success btn-sm",href=`/jobs/${clientDetails.id}/${jobStatus.jobId._id}/results/${jobStatus._id}/${collectionName}/download`) Export CSV (Total: #{totalRecords})
+                        
+                        span.form-text Limiting to #{results.length} Records in the table below (for data structure review)
+                        //- a(class="btn btn-success btn-sm",href=`/jobs/${clientDetails._id}/${jobStatus.jobId._id}/results/${jobStatus._id}/${collectionName}/download`) Download All Records in CSV (Total: #{totalRecords})
+                    
+                
+                
+                div.col
+                    .card.card-body.bg-light
+                        strong Maintenance
+                        br
+                        input(type="button",class="btn mb-1 btn-sm btn-danger",data-bs-toggle="modal",onclick="$('#confirmProcess').modal()",value="Process Pending Crawls")
+                        input(type="button",class="btn btn-sm btn-warning",data-toggle="modal",onclick="$('#confirmBlocked').modal()",value="Process Blocked Requests")
+            
+        
+        div(style="width:99%;margin: 0 auto;")
+            table(class="table table-sm",id="results")
+                if firstResult
+                    thead
+                        tr
+                            th S.No.
+                            each value, key in firstResult
+                                //- th=key
+                                th=value
+                tbody
+                    each result in results
+                        tr
+                            td #{i}
+                            each value, key in firstResult
+                                td(nowrap) #{result[value]}
+                            - i = i+1
+        
+        script.
+            $(document).ready(function() {
+                $("#results").DataTable({
+                    "scrollY": 500,
+                    "scrollX": true,
+                    //- "height" :340
+                    //- dom: 'Bfrtip',
+                    //- buttons: [
+                    //-     //- 'copy', 'csv'
+                    //- ]
+                });
+                $(".dataTables_scrollBody").css("height","340px")
+            } );
+        
+        div(style="height:100px;")
+
+        div(class="modal fade",id="confirmProcess",tabindex="-1",role="dialog",aria-labelledby="confirmProcessModalLabel",aria-hidden="true")
+            div(class="modal-dialog",role="document")
+                div(class="modal-content")
+                    div(class="modal-header")
+                        h5(class="modal-title",id="confirmProcessModalLabel") Confirmation Required
+                        button(type="button",class="btn-close",data-bs-dismiss="modal",aria-label="Cancel")
+                            
+
+                    //- form(action=`/jobs/${clientDetails._id}/${jobStatus.jobId._id}/processpending/${jobStatus._id}` method="post")
+                    form(action=`/jobs/${clientDetails.id}/${jobStatus.jobId._id}/processpending/${jobStatus._id}` method="post")
+                        .modal-body
+                            div Please make sure that crawling/fetching of data is not in progress. You may have to clear Message Queues or stop existing fetchers manually if they are in progress.
+                            br
+                            br
+                            div If you are confident that no fetching is in progress for this batch, then you may Go Ahead.
+                            hr
+                            div Please select the queue
+                            div
+                                select(name="queue",class="custom-select")
+                                    if jobStatus.source.type == "customasin"
+                                        option(value="product-page.fetcher.desktop.seeds") product-page.fetcher.desktop.seeds
+                                        option(value="product-page.fetcher.asin-search.desktop.seeds") product-page.fetcher.asin-search.desktop.seeds
+                                    else if jobStatus.source.type == "customurlasin"
+                                        option(value="product-page.fetcher.desktop.url.seeds") product-page.fetcher.desktop.url.seeds
+                                        option(value="product-page.fetcher.asin-search.desktop.seeds") product-page.fetcher.asin-search.desktop.seeds
+                                    else if jobStatus.source.type == "keywords"
+                                        option(value="amazon.serp.fetcher.native") amazon.serp.fetcher.native (uses scrapy)
+                                        option(value="search-keywords") search-keywords (uses Selenium)
+                                        
+                                    else if jobStatus.source.type == "reviews"
+                                        option(value="reviews.fetcher.desktop.asin.seeds") reviews.fetcher.desktop.asin.seeds
+                                    else if jobStatus.source.type == "flipkartseller"
+                                        option(value="flipkart.seller.fetcher.seeds") flipkart.seller.fetcher.seeds
+                                    else if jobStatus.source.type == "amazonseller"
+                                        option(value="amazon.seller.fetcher.seeds") amazon.seller.fetcher.seeds
+                                    else
+                                        option(value="") Not Applicable
+                                
+
+                        div(class="modal-footer")
+                            input(type="button",class="btn btn-success",data-bs-dismiss="modal",value="Cancel")
+                            input(type="submit",class="btn btn-danger", value="Go Ahead - Process Pending")
+        
+        div(class="modal fade",id="confirmBlocked",tabindex="-1",role="dialog",aria-labelledby="confirmBlockedModalLabel",aria-hidden="true")
+            div(class="modal-dialog",role="document")
+                div(class="modal-content")
+                    div(class="modal-header")
+                        h5(class="modal-title",id="confirmProcessModalLabel") Confirm - Process Blocked Requests
+                        button(type="button",class="btn-close",data-bs-dismiss="modal",aria-label="Cancel")
+                            
+
+                    //- form(action=`/jobs/${clientDetails._id}/${jobStatus.jobId._id}/processblocked/${jobStatus._id}` method="post")
+                    form(action=`/jobs/${clientDetails.id}/${jobStatus.jobId._id}/processblocked/${jobStatus._id}` method="post")
+                        .modal-body
+                            div Please make sure that crawling/fetching of data is not in progress. You may have to clear Message Queues or stop existing fetchers manually if they are in progress.
+                            br
+                            br
+                            div If you are confident that no fetching is in progress for this batch, then you may Go Ahead.
+                            hr
+                            div Please select the queue
+                            div
+                                select(name="queue",class="custom-select")
+                                    if jobStatus.source.type == "reviews"
+                                        option(value="reviews.fetcher.desktop.asin.seeds") reviews.fetcher.desktop.asin.seeds
+                                    else if jobStatus.source.type == "customasin"
+                                        option(value="product-page.fetcher.desktop.seeds") product-page.fetcher.desktop.seeds
+                                    else
+                                        option(value="") Not Applicable
+                                
+
+                        div(class="modal-footer")
+                            input(type="button",class="btn btn-success",data-bs-dismiss="modal",value="Cancel")
+                            input(type="submit",class="btn btn-danger", value="Go Ahead - Process Blocked")
+
+    .modal.fade#allItemsModal1()
+        .modal-dialog.modal-lg.modal-dialog-centered.modal-dialog-scrollable
+            .modal-content
+                .modal-header
+                    h4.modal-title Show All Items
+                    button.btn-close(type='button' data-bs-dismiss='modal')
+                .modal-body
+                    #allItemsDiv
+                .modal-footer
+                    button.btn.btn-secondary(type='button' data-bs-dismiss='modal') Close
+                    //- a.btn.btn-primary(onclick="copyToClipboard('#allItems');") Copy to Clipboard
+            
+    script.
+        document.getElementById("searchVal").value ="#{search_field}"
+        //- $('#showAllItems').click(function(){
+        //-     $("#allItems").toggle();
+        //-     $(this).text( $(this).text() == 'Show Items' ? 'Hide Items' : 'Show Items' );
+        //- });
+        $(document).ready(function(){
+            $('#allItems').clone().appendTo('#allItemsDiv');
+        });

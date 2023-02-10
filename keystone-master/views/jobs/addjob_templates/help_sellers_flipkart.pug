@@ -1,0 +1,19 @@
+div(class="form-group row",style="display:none;",id="parserinfo-flipkart_reviews,flipkart_reviews_spider|flipkart-reviews")
+    .col-sm-4
+    .col-sm-5
+        div(class="form-text alert alert-info")
+            strong The Flipkart.com's "Fetch Reviews by ItemID &amp; ProductID" pipeline contains 1 segment
+            ol
+                li Fetching &amp; Processing of Reviews by entering the ItemID and ProductID in a pre-defined format
+            div
+                strong Output
+                ol
+                    li List of reviews for each product
+            div
+                em
+                    strong Note: 
+                    ul
+                        li The fetching is done via calling an API, which returns a JSON
+                        li The reviews are fetched in totality the first time
+                        li In the subsequent runs (for example, if scheduled), then only new reviews are crawled
+                        li The sorting of reviews is always by 'Most Recent'

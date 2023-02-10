@@ -1,0 +1,398 @@
+div(id="keywords",class="",style="display:none")
+    div(class="mb-3 row")
+        label(for="sourceData[keywords][data]",class="col-sm-4 col-form-label") List of Keywords
+            .form-text
+                ul
+                    li One Per Line
+                    li Keywords are Case Sensitive
+        .col-sm-5
+            textarea(name="sourceData[keywords][data]",id="sourceData[keywords][data]",class="form-control",rows="10",onchange="countLines(this.id,'keywordLines')",onkeyup="countLines(this.id,'keywordLines')")= job.source.modifiedData
+            div.mt-2
+                input(type="button",value="Clean Up (Sort and Unique)",class="btn btn-sm btn-warning",onclick="cleanText('sourceData[keywords][data]')") 
+                span.mt-2
+                    strong
+                        span  Keywords Found: 
+                        span#keywordLines 
+                script.
+                    countLines('sourceData[keywords][data]','keywordLines')
+
+    div(class="mb-3 row")
+        label(for="sourceData[keywords][domain]",class="col-sm-4 col-form-label") Search Domain
+        .col-sm-5
+            - let domain_keyword = job.source.domain 
+            select(name="sourceData[keywords][domain]",id="sourceData[keywords][domain]",class="form-select",autocomplete="off",onchange=`showDomain(this.value,${editing})`,onclick=`showDomainKeywords(this.value,${editing}),currentBrowserKeywords("${domain}","${browser}",${editing})`)
+                - let all_keyword_domains = []
+                each domain in domain_info
+                    if domain.crawlerType == "keywords"
+                        - all_keyword_domains.push(domain.domainNickName)
+                - all_keyword_domains.sort()
+                each domain_nick_name in all_keyword_domains
+                    each mydomain in domain_info 
+                        if mydomain.crawlerType == "keywords" && mydomain.domainNickName == domain_nick_name
+                            option(value = `${mydomain.domainName}`,selected=domain_keyword == `${mydomain.domainName}`) #{mydomain.domainNickName}
+                //- option(value="WWW.AMAZON.AE",selected=domains == "WWW.AMAZON.AE") Amazon.ae (UAE)
+                //- option(value="WWW.AMAZON.COM",selected=domains == "WWW.AMAZON.COM") Amazon.com (USA)
+                //- option(value="WWW.AMAZON.CO.JP",selected=domains == "WWW.AMAZON.CO.JP") Amazon.co.jp (Japan)
+                //- option(value="WWW.AMAZON.FR",selected=domains == "WWW.AMAZON.FR") Amazon.fr (France)
+                //- option(value="WWW.AMAZON.IN",selected=domains == "WWW.AMAZON.IN") Amazon.in (India)
+                //- option(value="WWW.AMAZON.SA",selected=domains == "WWW.AMAZON.SA") Amazon.sa (Saudi Arabia)
+                //- option(value="WWW.BIGBASKET.COM",selected=domains == "WWW.BIGBASKET.COM") Bigbasket.com (India)
+                //- option(value="BLIBLI.COM",selected=domains == "BLIBLI.COM") Blibli.com (Indonesia)
+                //- option(value="WWW.CARREFOUR.FR",selected=domains == "WWW.CARREFOUR.FR") Carrefour.fr (France)
+                //- option(value="WWW.CARREFOUR.ES",selected=domains == "WWW.CARREFOUR.ES") Carrefour.es (Spain)
+                //- option(value="WWW.FIRSTCRY.COM",selected=domains == "WWW.FIRSTCRY.COM") Firstcry.com (India)
+                //- option(value="FLIPKART.COM",selected=domains == "FLIPKART.COM") Flipkart.com (India)
+                //- option(value="WWW.GROFERS.COM",selected=domains == "WWW.GROFERS.COM") Grofers.com (India)
+                //- option(value="WWW.LAZADA.CO.ID",selected=domains == "WWW.LAZADA.CO.ID") Lazada.co.id (Indonesia)
+                //- option(value="WWW.LAZADA.COM.MY",selected=domains == "WWW.LAZADA.COM.MY") Lazada.com.my (Malaysia)
+                //- option(value="WWW.LAZADA.COM.PH",selected=domains == "WWW.LAZADA.COM.PH") Lazada.com.ph (Philippines)
+                //- option(value="WWW.LAZADA.SG",selected=domains == "WWW.LAZADA.SG") Lazada.sg (Singapore)
+                //- option(value="WWW.LAZADA.CO.TH",selected=domains == "WWW.LAZADA.CO.TH") Lazada.co.th (Thailand)
+                //- option(value="WWW.LAZADA.VN",selected=domains == "WWW.LAZADA.VN") Lazada.vn (Vietnam)
+                //- option(value="WWW.MYNTRA.COM",selected=domains == "WWW.MYNTRA.COM") Myntra.com (India)
+                //- option(value="WWW.NYKAA.COM",selected=domains == "WWW.NYKAA.COM") Nykaa.com (India)
+                //- option(value="PAYTMMALL.COM",selected=domains == "PAYTMMALL.COM") Paytmmall.com (India)
+                //- option(value="RANKING.RAKUTEN.CO.JP",selected=domains == "RANKING.RAKUTEN.CO.JP") Rakuten.co.jp (Japan)
+                //- option(value="SHOPEE.CO.ID",selected=domains == "SHOPEE.CO.ID") Shopee.co.id (Indonesia)
+                //- option(value="SHOPEE.COM.MY",selected=domains == "SHOPEE.COM.MY") Shopee.com.my (Malaysia)
+                //- option(value="SHOPEE.PH",selected=domains == "SHOPEE.PH") Shopee.ph (Philippines)
+                //- option(value="SHOPEE.SG",selected=domains == "SHOPEE.SG") Shopee.sg (Singapore)
+                //- option(value="SHOPEE.CO.TH",selected=domains == "SHOPEE.CO.TH") Shopee.co.th (Thailand)
+                //- option(value="SHOPEE.VN",selected=domains == "SHOPEE.VN" ) Shopee.vn (Vietnam)
+                //- option(value="TATACLIQ.COM",selected=domains == "TATACLIQ.COM") Tatacliq.com (India)
+                //- option(value="TOKOPEDIA.COM",selected=domains == "TOKOPEDIA.COM") Tokopedia.com (Indonesia)
+                //- option(value="WWW.WALMART.COM",selected=domains == "WWW.WALMART.COM") Walmart.com (USA)
+                //- option(value="WWW.WALMART.COM.MX",selected=domains == "WWW.WALMART.COM.MX") Walmart.com.mx (Mexico)
+        //- script. 
+        //-     showDomain($("#sourceData[keywords][domain]").val())
+            
+
+    //- div(class="mb-3 row",id="WWW_GROFERS_COM",style="display:none")
+    //-     label(for="kw_cityselectgf",class="col-sm-4 col-form-label") Provide City Information
+    //-         ul
+    //-             li Only Applicable for Grofers
+
+        //- div(class="col-sm-5")
+        //- - var citiesGF = ['Delhi','Bangalore','Mumbai']
+        //-     for city in citiesGF
+        //-         div(class="form-check form-check-inline")
+        //-             input(type="checkbox",name=`sourceData[keywords][city][${city}]`,class="form-check-input",id=`kw_cityselectgf${city}`,value="",autocomplete="off")
+        //-             label(class="form-check-label",for=`kw_cityselectgf${city}`) #{city}
+
+
+
+    
+
+
+    div(class="mb-3 row")
+        label(for="sourceData[keywords][crawlinglanguage]",class="col-sm-4 col-form-label") Default Crawling Language
+        .col-sm-5
+            - let crawler_language_keywords = job.source.crawlinglanguage
+            select(name="sourceData[keywords][crawlinglanguage]",id="sourceData[keywords][crawlinglanguage]",class="form-select",autocomplete="off")
+                option(value="",selected = crawler_language_keywords == "") English (where applicable)
+                option(value="native",selected = crawler_language_keywords == "native") Native Language
+                
+    div(class="mb-3 row")
+            label(for="sourceData[keywords][batchsize]",class="col-sm-4 col-form-label") Batch Size
+                .form-text
+                    ul
+                        li Ideally Batch Size for Keywords/SERP Job is 50
+                        li Only Positive Number can be provided as input
+            .col-sm-5
+                input(type = "number", min = "1", list="sourceData[keywords][batchsize]" name="sourceData[keywords][batchsize]" class = "form-control" ,value = `${batchsize}`,autocomplete = "off", placeholder = "Input Custom Batch Size or Select from the List")
+                datalist(name="sourceData[keywords][batchsize]",id="sourceData[keywords][batchsize]")
+                    option(value = 50) For SERP/Keywords Type Job (Recommended)
+    div(class="mb-3 row",id="WWW_AMAZON_IN",style="display:none")
+        label(for="kw_cityselectamzin",class="col-sm-4 col-form-label") Provide Search Information
+            .form-text Only Applicable for Amazon.in - (Pantry, Fresh)
+
+        .col-sm-5
+            - let pgType = job.source.page_type
+           
+            //- script. 
+            //-     document.getElementById("sourceData[keywords][page_type]").value() = pgType
+            select(name="sourceData[keywords][page_type][amz]",id="sourceData[keywords][page_type][amz]",class="form-select",autocomplete="off",onchange="showAZSearch(this.value)")
+                option(value="serp",selected=pgType == "serp") Default Search
+                option(value="pantry",selected=pgType == "pantry") Amazon Pantry
+                option(value="fresh",selected=pgType == "fresh") Amazon Fresh
+
+
+            div(class="",id="AMAZON_IN_PANTRY_FRESH",style="display:none")
+                .form-text.alert.alert-info
+                    div(class="p-1 mb-1 fw-bold small") Provide City Information: 
+                        span.fw-normal Separate the pincodes by comma. Ensure that each pin code is 6 digits.
+                    - var citiesAMZIN = ['Others','Ahmedabad','Bangalore','Chennai','Delhi','Gurgaon','Hyderabad','Jaipur','Kanpur','Kolkata','Lucknow','Mumbai','Noida','Pune']
+                        for city in citiesAMZIN
+                            button(type="button", id="kw_cityselectAMZIN",class="btn btn-sm btn-primary mb-1", onclick=`addPincode('${city}','pincodesAMZIN','')`) #{city}
+                    div(id="pincodesAMZIN",class="mt-2 input-group")
+
+
+    div(class="mb-3 row",id="FLIPKART_COM",style="display:none")
+        label(for="kw_cityselectflipkart",class="col-sm-4 col-form-label") Provide Search Information
+            ul.form-text
+                li Only Applicable for Flipkart.com - Grocery
+
+        .col-sm-5
+            - let flipPgType = job.source.page_type
+            select(name="sourceData[keywords][page_type][fk]",id="sourceData[keywords][page_type][fk]",class="form-select",autocomplete="off",onchange="showFlipSearch(this.value)")
+                option(value="serp",selected=flipPgType == "serp") Default Search
+                option(value="grocery",selected=flipPgType == "grocery") Grocery   
+
+            div(class="",id="FLIPKART_COM_GROCERY",style="display:none")
+                .form-text.alert.alert-info
+                    div(class="p-1 mb-1 fw-bold small") Provide City Information:
+                        span.fw-normal Separate the pincodes by comma. Ensure that each pin code is 6 digits.
+                    - var citiesFlipkart = ['Others','Ahmedabad-Gandhinagar','Bangalore','Chennai','Delhi','Gurgaon','Hyderabad','Kanpur','Kolkata','Lucknow','Mumbai','Noida-Ghaziabad','Pune']
+                        for city in citiesFlipkart
+                            button(type="button", id="kw_cityselectFLIPKART",class="btn btn-sm btn-primary mb-1", onclick=`addPincode('${city}','pincodesFLIPKART','')`) #{city}
+                    div(id="pincodesFLIPKART",class="mt-2 input-group")
+
+
+        //- page_type in ['pantry', 'fresh', 'serp']
+        //- .col-sm-5
+        //-     - var citiesGF = ['Ahmedabad-Gandhinagar','Bangalore','Chennai','Delhi','Gurgaon','Hyderabad','Kanpur','Kolkata','Lucknow','Mumbai','Noida-Ghaziabad','Pune']
+        //-         for city in citiesGF
+        //-             button(type="button", id="kw_cityselectgf",class="btn btn-sm btn-primary mb-1", onclick=`addPincode('${city}','pincodesgf')`) #{city}
+        //-     div(id="pincodesgf",class="mt-2 form-group row")
+
+
+    div(class="mb-3 row",id="WWW_GROFERS_COM",style="display:none")
+        label(for="kw_cityselectgf",class="col-sm-4 col-form-label") Provide City Information
+            ul.form-text
+                li Only Applicable for Grofers
+
+        .col-sm-5
+            .form-text.alert.alert-info
+                div(class="p-1 mb-1 fw-bold small") Provide City Information:
+                    span.fw-normal Separate the pincodes by comma. Ensure that each pin code is 6 digits.
+                - var citiesGF = ['Others','Ahmedabad-Gandhinagar','Bangalore','Chennai','Delhi','Gurgaon','Hyderabad','Kanpur','Kolkata','Lucknow','Mumbai','Noida-Ghaziabad','Pune']
+                    for city in citiesGF
+                        button(type="button", id="kw_cityselectgf",class="btn btn-sm btn-primary mb-1", onclick=`addPincode('${city}','pincodesgf','')`) #{city}
+                div(id="pincodesgf",class="mt-2 form-group row")
+
+
+    div(class="mb-3 row",id="BLINKIT_COM",style="display:none")
+        label(for="kw_cityselectbk",class="col-sm-4 col-form-label") Provide City Information
+            ul.form-text
+                li Only Applicable for Blinkit
+
+        .col-sm-5
+            .form-text.alert.alert-info
+                div(class="p-1 mb-1 fw-bold small") Provide City Information:
+                    span.fw-normal Separate the pincodes by comma. Ensure that each pin code is 6 digits.
+                - var citiesBK = ['CityPincode']
+                    for city in citiesBK
+                        button(type="button", id="kw_cityselectbk",class="btn btn-sm btn-primary mb-1", onclick=`addPincode('${city}','pincodesbk','')`) #{city}
+                div(id="pincodesbk",class="mt-2 form-group row")
+
+      
+    div(class="mb-3 row",id="WWW_SWIGGY_COM",style="display:none")
+        label(for="kw_cityselectsg",class="col-sm-4 col-form-label") Provide City Information
+            ul.form-text
+                li Only Applicable for Swiggy
+
+        .col-sm-5
+            .form-text.alert.alert-info
+                div(class="p-1 mb-1 fw-bold small") Provide City Information:
+                    span.fw-normal Separate the pincodes by comma. Ensure that each pin code is 6 digits.
+                - var citiesSG = ['CityPincode']
+                    for city in citiesSG
+                        button(type="button", id="kw_cityselectsg",class="btn btn-sm btn-primary mb-1", onclick=`addPincode('${city}','pincodessg','')`) #{city}
+                div(id="pincodessg",class="mt-2 form-group row")
+
+
+    div(class="mb-3 row",id="WWW_JIOMART_COM",style="display:none")
+        label(for="kw_cityselectjm",class="col-sm-4 col-form-label") Provide City Information
+            ul.form-text
+                li Only Applicable for Jiomart
+
+        .col-sm-5
+            .form-text.alert.alert-info
+                div(class="p-1 mb-1 fw-bold small") Provide City Information:
+                    span.fw-normal Separate the pincodes by comma. Ensure that each pin code is 6 digits.
+                - var citiesJM = ['CityPincode']
+                    for city in citiesJM
+                        button(type="button", id="kw_cityselectjm",class="btn btn-sm btn-primary mb-1", onclick=`addPincode('${city}','pincodesjm','')`) #{city}
+                div(id="pincodesjm",class="mt-2 form-group row")
+
+    div(class="mb-3 row",id="WWW_DMART_IN",style="display:none")
+        label(for="kw_cityselectdm",class="col-sm-4 col-form-label") Provide City Information
+            ul.form-text
+                li Only Applicable for Dmart
+
+        .col-sm-5
+            .form-text.alert.alert-info
+                div(class="p-1 mb-1 fw-bold small") Provide City Information:
+                    span.fw-normal Separate the pincodes by comma. Ensure that each pin code is 6 digits.
+                - var citiesDM = ['CityPincode']
+                    for city in citiesDM
+                        button(type="button", id="kw_cityselectdm",class="btn btn-sm btn-primary mb-1", onclick=`addPincode('${city}','pincodesdm','')`) #{city}
+                div(id="pincodesdm",class="mt-2 form-group row")
+
+
+    div(class="mb-3 row",id="WWW_BIGBASKET_COM",style="display:none")
+        label(for="kw_cityselectbb",class="col-sm-4 col-form-label") Provide City Information
+            ul.form-text
+                li Only Applicable for BigBasket
+
+        .col-sm-5
+            .form-text.alert.alert-info
+                div(class="p-1 mb-1 small fw-bold") Provide City Information:
+                    span.fw-normal Separate the pincodes by comma. Ensure that each pin code is 6 digits.
+                - var citiesBB = ['Others','Ahmedabad-Gandhinagar','Bangalore','Chennai','Delhi','Gurgaon','Hyderabad','Kanpur','Kolkata','Lucknow','Mumbai','Noida-Ghaziabad','Pune']
+                    for city in citiesBB
+                        button(type="button", id="kw_cityselectbb",class="btn btn-sm btn-primary mb-1", onclick=`addPincode('${city}','pincodesbb','')`) #{city}
+                div(id="pincodesbb",class="mt-2 form-group row")
+
+    
+            //- script. 
+            //-     showDomain($("#kw_cityselectbb").val())
+
+
+    div(class="mb-3 row")
+        label(for="sourceData[keywords][browser]",class="col-sm-4 col-form-label") Browser Interface
+        .col-sm-3
+            - let browserInterface = job.source.browser
+            select(name="sourceData[keywords][browser]",id="sourceData[keywords][browser]",class="form-select",autocomplete="off")
+                
+        .col-sm-2
+            - let max_pgs = job.source.maxpages
+            select(name="sourceData[keywords][maxpages]",id="sourceData[keywords][maxpages]",class="form-select",autocomplete="off")
+                - var n = 1
+                while n < 100
+                    - var page = 'Pages'
+                    - if (n == 1) page = 'Page'
+                    option(value=`${n}`,selected=max_pgs == n) First #{n} #{page}
+                    - n = n+1
+    div(class="mb-3 row")
+        label(for="sourceData[keywords][proxytype]",class="col-sm-4 col-form-label") Proxy Type
+        .col-sm-5
+            - let proxy_type = job.source.proxytype
+            select(name="sourceData[keywords][proxytype]",id="sourceData[keywords][proxytype]",class="form-select",autocomplete="off")
+                option(value="datacenter",selected = proxy_type == "datacenter") Data Center
+                option(value="hybrid",selected = proxy_type == "hybrid") Data Center, Failover Residential
+                option(value="residential",selected = proxy_type == "residential") Residential (Higher Costing)
+    script.
+        let selectedDomainKeywords
+        //- Search in Domain dropdown
+        $(document).ready(function()  
+        {
+            $('#sourceData\\[keywords\\]\\[domain\\]').select2({width:'100%'});
+            $('#sourceData\\[keywords\\]\\[domain\\]').one('select2:open', function(e) {
+                $('input.select2-search__field').prop('placeholder', 'Search Domain Here');
+            });
+        });
+        //- ! Below Comments are must read before any editing performed and in understanding the Code!
+        //- ! Making "selectedDomainKeywords" a global variable to access it in the below functions.
+        function showDomainKeywords(currentDomain,isEditing){
+            //-!  The value of selectedDomainKeywords is declared as global variable and is used in the below currentBrowserKeywords function.Because not able to retrive the current value from same function(currentBrowserReviews()).
+            //- ! In current domain its getting null so using currently selected domain while adding and updating the domain.
+            selectedDomainKeywords = currentDomain
+        } 
+            //- ! The 'domain' argument in the below function is used to populate the domain while clicking on edit button which outputs to prefilled Job form.
+        function currentBrowserKeywords(domain,browser,editing){
+                //-? Only domain  passed in the above function is current value while browser and editing is fetched from the backend db collection where job is saved.
+                //- * Storing all the domain information below after stringifying in variable allDomainInformation.
+                let allDomainInformation = !{JSON.stringify(domain_info)}
+                if(editing == false) {
+                    //- * Emptying the browsers value on changing the domain which triggers the function again. Without
+                    //- * emptying the browser interface getting stacked.
+                    $('#sourceData\\[keywords\\]\\[browser\\]').html("")
+                    //- * Currently selected domain is consoled below.Selected means selected from dropdown.
+                    console.log("Current domain selected for crawler type Keywords is",selectedDomainKeywords)
+                    for(let row of allDomainInformation){
+                        //- ? While adding the job after selecting the domain populating the browserInterface.
+                        if (row.crawlerType=="keywords" && row.domainName==selectedDomainKeywords)
+                        {
+                            if(row.browserInterface[0] == "desktop"){
+                                document.getElementById("sourceData[keywords][browser]").append(new Option("Desktop","desktop"));
+                            }
+                            if(row.browserInterface[0] == "mobile"){
+                                document.getElementById("sourceData[keywords][browser]").append(new Option("Mobile","mobile"));
+                            }   
+                            if(row.browserInterface[1] == "mobile"){
+                                document.getElementById("sourceData[keywords][browser]").append(new Option("Mobile","mobile"));
+                            }
+                            if(row.browserInterface[1] == "desktop"){
+                                document.getElementById("sourceData[keywords][browser]").append(new Option("Desktop","desktop"));
+                            }            
+                        }
+                    }
+                }
+                else if(editing == true){
+                    console.log("Current selected domain for crawler Type Keywords is",domain,"and saved browser before editing is",browser," with editing status",editing)
+                    //- * Emptying the browsers value on change which triggers the function again. Without
+                    //- * emptying the browser interface get stacked.
+                    $('#sourceData\\[keywords\\]\\[browser\\]').html("")
+                    for(let row of allDomainInformation){
+                        if ((row.crawlerType=="keywords" && row.domainName==selectedDomainKeywords)){  
+                            let browsers = row.browserInterface
+                            //- Below console gives the value of browsers for the given domain in an array when selected during updating the edit job form. 
+                            console.log("Browser Interface available for selected domain and crawler type are "+ browsers)
+                            if(browsers.length == 1){
+                                let current_browser = browsers[0]
+                                if (current_browser == "desktop")
+                                { 
+                                    document.getElementById("sourceData[keywords][browser]").append(new Option("Desktop","desktop"));
+                                }
+                                if (current_browser == "mobile")
+                                {
+                                    document.getElementById("sourceData[keywords][browser]").append(new Option("Mobile","mobile"));   
+                                }
+                            }
+                            else if(browsers.length == 2){
+                            //-    ?  If browser contains 2 interfaces (mobile and desktop) then populating browser Interface is slightly diffrent.
+                            //-     ? The below code handles the situations if while adding the browser Interface on Keystone under New Crawler section whether the sequence is <desktop mobile> or <mobile desktop>.
+                                let current_browser1
+                                let current_browser2
+                                if(browsers[0] == "mobile" && browsers[1] == "desktop"){
+                                    current_browser1 = "mobile"
+                                    current_browser2 = "desktop"
+                                }
+                                else if(browsers[0] == "desktop" && browsers[1] == "mobile"){
+                                    current_browser1 = "desktop"
+                                    current_browser2 = "mobile"
+                                }
+                                //- ? Always ensuring the value of given domain from frontend is equal to "mobile" and "desktop" only with ANY SEQUENCE.
+                                if (domain == selectedDomainKeywords &&   browser ==  "desktop" && current_browser2=="mobile" && current_browser1 == "desktop"){
+                                    document.getElementById("sourceData[keywords][browser]").append(new Option("Desktop","desktop",null,true));
+                                    document.getElementById("sourceData[keywords][browser]").append(new Option("Mobile","mobile"));
+                                }
+                                else if (domain == selectedDomainKeywords &&   browser ==  "desktop" && current_browser2=="desktop" && current_browser1 == "mobile"){
+                                    document.getElementById("sourceData[keywords][browser]").append(new Option("Desktop","desktop",null,true));
+                                    document.getElementById("sourceData[keywords][browser]").append(new Option("Mobile","mobile"));
+                                }
+                                else if (domain == selectedDomainKeywords && browser == "mobile" && current_browser2 == "desktop" && current_browser1 == "mobile"){
+                                    document.getElementById("sourceData[keywords][browser]").append(new Option("Mobile","mobile",null,true));
+                                    document.getElementById("sourceData[keywords][browser]").append(new Option("Desktop","desktop"));
+                                }
+                                else if (domain == selectedDomainKeywords && browser == "mobile" && current_browser2 == "mobile" &&  current_browser1 == "desktop"){
+                                    document.getElementById("sourceData[keywords][browser]").append(new Option("Mobile","mobile",null,true));
+                                    document.getElementById("sourceData[keywords][browser]").append(new Option("Desktop","desktop"));
+                                }
+                                //- ? In case of updating to new domain there are only two possiblites as in the below code
+                                else if(domain != selectedDomainKeywords && current_browser1 == "desktop" && current_browser2 == "mobile" ){
+                                    //- console.log("New Domain")
+                                    document.getElementById("sourceData[keywords][browser]").append(new Option("Desktop","desktop",null,true));
+                                    document.getElementById("sourceData[keywords][browser]").append(new Option("Mobile","mobile"));
+                                }
+                                else if(domain != selectedDomainKeywords &&  current_browser1 == "mobile" && current_browser2 == "desktop"){
+                                    document.getElementById("sourceData[keywords][browser]").append(new Option("Mobile","mobile"));
+                                    document.getElementById("sourceData[keywords][browser]").append(new Option("Desktop","desktop",null,true));
+                                }
+                            }
+                        }
+                    } 
+                }                   
+        }
+        //- showDomainKeywords function below is called only when the page loads on adding and editing.It brings value of current domain of
+        //- Keywords crawler which in turn sets the value of browser Interface.
+        showDomainKeywords($("#sourceData\\[keywords\\]\\[domain\\]").val(),!{editing});  //-?This finds the current value of top most domain for selected Type of Crawler.
+        //- Calling the functions when the value from domain dropdown is changed.
+        $('#sourceData\\[keywords\\]\\[domain\\]').on('select2:select', function (e) {
+            showDomainKeywords($("#sourceData\\[keywords\\]\\[domain\\]").val(),!{editing});  //-?This finds the current value of top most domain for selected Type of Crawler.
+            currentBrowserKeywords($("#sourceData\\[keywords\\]\\[domain\\]").val(),"!{browser}",!{editing}); //-? From the value of Domain received the function sets the value of browser Interface.
+            });
+            
+
+        

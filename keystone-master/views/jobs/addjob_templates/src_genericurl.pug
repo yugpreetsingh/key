@@ -1,0 +1,40 @@
+div(id="generic",class="",style="display:none")
+    div(class="mb-3 row")
+        label(for="sourceData[generic][data]",class="col-sm-4 col-form-label") Amazon Bestsellers (Categories) URL
+            .form-text
+                strong Example
+                div https://www.amazon.in/gp/bestsellers/electronics/1388867031/
+                div https://www.amazon.in/gp/bestsellers/hpc/
+        .col-sm-5
+            textarea(name="sourceData[generic][data]",id="sourceData[generic][data]",class="form-control",rows="10")= job.source.modifiedData
+            .form-text.text-danger
+                strong Every URL should be in a new line.
+
+            //- text(type="text",name="sourceData[generic][data]",id="sourceData[generic][data]",class="form-control ",value= `${job.source.data}`)
+    div(class="mb-3 row")
+        label(for="sourceData[generic][recursive]",class="col-sm-4 col-form-label") Get Sub-categories automatically?
+        .col-sm-5
+            - let category_recursive = job.source.recursive
+            select(name="sourceData[generic][recursive]",id="sourceData[generic][recursive]",class="form-select",autocomplete="off")
+                option(value="false",selected=category_recursive == false) No, I just want the data in the above categories.
+                option(value="true",selected=category_recursive == true) Yes, I know what I am doing. I need all sub-categories also.
+
+            p.form-text 
+                |Please note, if you are crawling sub-categories, it may take more time, and require more bandwidth. The better idea might be to provide multiple category links that you are interested in.
+    div(class="mb-3 row")
+        label(for="sourceData[generic][crawlinglanguage]",class="col-sm-4 col-form-label") Default Crawling Language
+        .col-sm-5
+            - let crawler_language_genericurl = job.source.crawlinglanguage
+            select(name="sourceData[generic][crawlinglanguage]",id="sourceData[generic][crawlinglanguage]",class="form-select",autocomplete="off")
+                option(value="",selected = crawler_language_genericurl == "") English (where applicable)
+                option(value="native",selected = crawler_language_genericurl == "native") Native Language
+    div(class="mb-3 row")
+            label(for="sourceData[generic][batchsize]",class="col-sm-4 col-form-label") Batch Size
+                .form-text
+                    ul
+                        li Ideally Batch Size for Generic Job is 1
+                        li Only Positive Number can be provided as input
+            .col-sm-5
+                input(type = "number", min = "1", list="sourceData[generic][batchsize]", name="sourceData[generic][batchsize]", class = "form-control", value = `${batchsize}`,autocomplete = "off", placeholder = "Input Custom Batch Size or Select from the List")
+                datalist(name="sourceData[generic][batchsize]",id="sourceData[generic][batchsize]")
+                    option(value = 1) For Generic Type Job            

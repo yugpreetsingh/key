@@ -1,0 +1,70 @@
+extends ../layouts/master.pug
+
+block content
+    h2.d-flex.flex-column.flex-sm-row.justify-content-between
+        | Client List
+        a.btn.btn-dark.mt-3.mt-sm-0(data-bs-toggle="modal" data-bs-remote="add.pug" href="#addClients" role="button") Add New Client
+
+    if clients.length > 0
+        .table-responsive()
+            table(class="table table-striped table-hover table-sm")
+                thead(class="thead-dark")
+                    tr
+                        th(scope="col") #
+                        th(scope="col") Name
+                        th(scope="col") Client Id
+                        th(scope="col") Jobs
+                        th(scope="col") Domain
+                        th(scope="col") Last Run
+                        th(scope="col") Action
+
+                tbody
+                - let i = 0
+                each client in clients
+                    - i = i+1
+                    tr
+                        th(scope="row") #{i}
+                        td #{client.name} 
+                            //- a(href=`/clients/details/${client._id}`) #{client.name}
+                        td #{client.id}    
+                        td(nowrap) 
+                            span 
+                                a(href=`/jobs/${client.id}` class ="btn btn-primary btn-sm") Manage
+                            //- a(href=`/jobs/${client._id}`) Manage
+        
+                        td #{client.domain}
+                            //- a(href=`https://${client.domain}.1digitalstack.com`,target="_new") https://#{client.domain}.1digitalstack.com
+                            //- a(href="") https://#{client.domain}.1digitalstack.com
+                        td Never
+                        td(nowrap) -
+                            //- a(href=`/clients/details/${client._id}`) Details
+                            
+                            span  -
+                            //- a(href=`/clients/edit/${client._id}`) Edit
+                            
+                            span  -
+                            //- a(href=`/jobs/pauseall/${client._id}`) Pause All
+                            
+            //- a(href="/clients/addNew",class="btn btn-primary") Add New Client
+
+    else
+        p No clients available
+        a(href="/clients/addNew",class="btn btn-primary") Add New Client
+    
+    script.
+        $('#addClients').on('show.bs.modal', function(e) {
+            var button = $(e.relatedTarget);
+            var modal = $(this);
+            modal.find('.modal-body').load(button.data("remote"));
+        });
+
+    #addClients.modal.fade(tabindex='3' aria-labelledby='addClients' aria-hidden='true')
+        .modal-dialog.modal-xl
+            .modal-content
+                .modal-body
+                    //| hi
+                    include ../client/add.pug
+                .modal-footer
+                    button.btn.btn-secondary(type='button' data-bs-dismiss='modal') Close
+
+    

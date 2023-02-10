@@ -1,0 +1,63 @@
+
+
+block content
+    - let action = (editing?"editClient":"addNew")
+
+    h2 Add New Client
+
+    form(action=`/clients/${action}`,method="post")
+
+        div(class="mb-3 row")
+            label(for="name",class="col-sm-4 col-form-label") Name of Client
+            .col-sm-5
+                input(type="text",name="name",id="name",class="form-control ")
+
+        div(class="mb-3 row")
+            label(for="domain",class="col-sm-4 col-form-label") Domain
+            div(class="col-auto col-form-label",style="padding-right:0px;")
+                strong https://
+            div(class="col-sm-2",style="padding-right:5px;padding-left:5px;")
+                input(type="text",name="domain",id="domain",class="form-control")
+            div(class="col-auto col-form-label",style="padding-left:0px;")
+                strong .1digitalstack.com
+
+        div(class="mb-3 row")
+            label(for="domainAlias",class="col-sm-4 col-form-label") Domain Alias
+            .col-sm-5
+                input(type="text",name="domainAlias",id="domainAlias",class="form-control ")
+
+        div(class="mb-3 row")
+            label(for="contactName",class="col-sm-4 col-form-label") Client Contact Name
+            .col-sm-5
+                input(type="text",name="contactName",id="contactName",class="form-control ")
+
+        div(class="mb-3 row")
+            label(for="contactEmail",class="col-sm-4 col-form-label") Client Contact Email
+            .col-sm-5
+                input(type="text",name="contactEmail",id="contactEmail",class="form-control ")
+
+        div(class="mb-3 row")
+            label(for="contactPhone",class="col-sm-4 col-form-label") Client Contact Phone
+            .col-sm-5
+                input(type="text",name="contactPhone",id="contactPhone",class="form-control ")
+
+        div(class="mb-3 row")
+            label(for="country",class="col-sm-4 col-form-label") Country (to be updated to support multiple countries)
+            .col-sm-7
+                select(name="country",id="country",class="form-select")
+                    option(value="IN") India
+                    option(value="IN") USA
+
+        //- div(class="mb-3 row")
+        //-     label(for="clientOwner",class="col-sm-4 col-form-label") Owner at 1DS
+        //-     .col-sm-7
+        //-         select(name="clientOwner",id="clientOwner",class="form-control")
+        //-             each user in users
+        //-                 option(value=`${user.id}`) #{user.name} &lt;#{user.email}&gt;
+            
+        div(class="mb-3 row")
+            .col-sm-4
+            .col-sm-8
+                input(type="submit",value="Add Client",class="btn btn-primary") 
+                //- span &nbsp; 
+                //- a(href="/clients") Cancel &amp; Go Back

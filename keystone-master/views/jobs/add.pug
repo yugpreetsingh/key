@@ -1,0 +1,464 @@
+extends ../layouts/master.pug
+
+block content
+    - let action = (editing?"editschedule":"schedule")
+    - let pagetitle = (editing?"Edit Job":"Add New Job")
+    //- - var selected_city = []
+    //- each pin,cityname in job.source.city
+    //-     - selected_city.push(cityname)
+    
+    h2.d-flex.justify-content-between
+        div
+            | #{pagetitle} for 
+            span.text-primary #{clientDetails.name}
+        a.btn.btn-secondary.mt-3.mt-sm-0(href=`/jobs/${clientDetails.id}`)  Back
+    //- h3 #{selected_city}
+
+
+   
+    //- h2 Add a New Job
+    //- onsubmit='return onSubmitPincodeValidation()' ==> correct way
+    //- if `onSubmitPincodeValidation()` return false, `onsubmit` will return false and form won't be submitted560037, 560004, 5600 #8,    56 0   0      04,56009a
+
+
+    form(action=`/jobs/${clientDetails.id}/${action}`,method="post",onsubmit='return onSubmitPincodeValidation()')
+
+        div(class="mb-3 row")
+            label(for="sourceType",class="col-sm-4 col-form-label") Type of Source
+            .col-sm-5
+                
+                input(type="hidden",name="clientDetailsId",value= `${clientDetails.id}`)
+                input(type="hidden",name="jobId",value= `${job._id}`)
+                - let source = job.source.type
+                
+                select(name="sourceType",id="sourceType",class="form-select",onchange="showSourceType(this.value)",autocomplete="off")
+                    option(value="") -- Select Source Type --
+                    option(value="generic",selected=source == "generic") Generic Open URL for Amazon Bestsellers
+                    option(value="categories",selected=source == "categories") Categories Crawling (except Amazon Bestsellers)
+                    option(value="keywords",selected=source == "keywords") Keywords
+                    option(value="customasin",selected=source == "customasin") Custom ASINs
+                    //- option(value="customurlasin",selected=source == "customurlasin") Custom ASIN URLs
+                    //- option(value="searchbyasin",selected=source == "searchbyasin") Search Products By ASINs
+                    option(value="reviews",selected=source == "reviews") Reviews
+                    //- TEMPORARY: For Philips War Room 01 May 2021 Amazon Sale (Vivek / Krishna)
+                    option(value="amazonseller",selected=source == "amazonseller") Amazon Seller Info (Temp - War Room 01 May 2021 Sale)
+                    option(value="flipkartseller",selected=source == "flipkartseller") Flipkart Seller Info (Temp - War Room 01 May 2021 Sale)
+                    //- option(value="existing") Existing Parser Resultset
+
+
+        include ./addjob_templates/src_genericurl.pug
+
+        include ./addjob_templates/src_categories.pug
+
+        include ./addjob_templates/src_keywords.pug
+
+        include ./addjob_templates/src_customasin.pug
+
+        include ./addjob_templates/src_reviews.pug
+
+        include ./addjob_templates/src_amazonseller.pug
+
+        include ./addjob_templates/src_flipkartseller.pug
+
+        div(class="mb-3 row")
+            label(for="parser",class="col-sm-4 col-form-label") Select Parser Pipeline
+            .col-sm-5
+                //- select(name="parser",id="parser",class="form-control",onchange="showOutputStream(this.value);selectSpider(this.value)",autocomplete="off")
+                - let parser = job.parser.pipeline
+                select(name="parser",id="parser",class="form-select",onchange="showDetails(this.value)",autocomplete="off")
+                    option(value="") -- Select Parser Pipeline --
+                    - let genLabel = []
+                    each pipeline in pipeline_info
+                        - genLabel.push(pipeline.genericLabel.genericLabel)
+                    - let unique_gen_Label = [...new Set(genLabel)]
+                    - unique_gen_Label.sort()
+                    each optgroup in unique_gen_Label
+                        optgroup(label = optgroup)                                     
+                            each pipeline in pipeline_info
+                                if pipeline.genericLabel.genericLabel === optgroup
+                                    option(value = `${pipeline.projectName},${pipeline.spiderName}|${pipeline.collectionName}`,selected = parser == `${pipeline.projectName}`) #{pipeline.jobType} (#{pipeline.projectName},#{pipeline.spiderName})
+           
+                    //- optgroup(label="Amazon.in")
+                    //- option(value="amazon-categories-fetcher,categories_fetcher|categories,products", selected= parser == "amazon-categories-fetcher") Categories &amp; Top Products (amazon-categories-fetcher,categories_fetcher)
+                    //- option(value="amazon_qna,amazon_qna_spider|amazon-qna") Fetch Q&amp;A by ASIN (amazon_qna,amazon_qna_spider)
+                    //- optgroup(label="Amazon Generic")
+                    //-     option(value="amazon_serp_fetcher,serp_fetcher|serp-pages,serp-products",selected= parser == "amazon_serp_fetcher") Keyword Search Results / SERP (amazon_serp_fetcher,serp_fetcher)
+                    //-     option(value="amazon_product_page_fetcher,product_page_fetcher|custom-asin-pages,product-details",selected= parser == "amazon_product_page_fetcher") Custom ASINs / URLs Product Details (amazon_product_page_fetcher,product_page_fetcher)
+                    //-     option(value="amazon_product_page_fetcher,product_page_fetcher_by_asin_serp|custom-asin-pages,product-details",selected= parser == "amazon_product_page_fetcher") Search Product Details by ASIN (amazon_product_page_fetcher,product_page_fetcher_by_asin_serp)
+                    //-     option(value="amazon_reviews_fetcher,reviews_fetcher|raw_reviews_pages,reviews",selected= parser == "amazon_reviews_fetcher") Fetch Reviews by ASIN (amazon_reviews_fetcher,reviews_fetcher)
+                    //- optgroup(label="Bigbasket Generic")
+                    //-     option(value="bigbasket_serp_fetcher,bigbasket_serp_fetcher|bigbasket-serp",selected= parser == "bigbasket_serp_fetcher") Keyword Search Results / SERP (bigbasket_serp_fetcher,bigbasket_serp_fetcher)
+                    //- optgroup(label="Blibli Generic")
+                    //-     option(value="blibli_serp_fetcher,blibli_serp_fetcher|blibli_serp_results",selected= parser == "blibli_serp_fetcher") Keyword Search Results / SERP (blibli_serp_fetcher,blibli_serp_fetcher)
+                    //-     option(value="blibli_category_fetcher,blibli_category_fetcher|blibli_category_results",selected= parser == "blibli_category_fetcher") Categories by URL (blibli_category_fetcher,blibli_category_fetcher)
+                    //-     option(value="blibli_product_fetcher,blibli_product_fetcher|blibli_product_fetcher_results,blibli_product_parser_results",selected= parser == "blibli_product_fetcher") Get Product Information for Blibli (blibli_product_fetcher,blibli_product_fetcher)
+                    //- optgroup(label="Carrefour France")
+                    //-     option(value="carrefour_serp_fetcher,carrefour_serp_spider|carrefour-serp",selected= parser == "carrefour_serp_fetcher") Keyword Search Results / SERP (carrefour_serp_fetcher,carrefour_serp_spider) 
+                    //- optgroup(label="Carrefour Spain")
+                    //-     option(value="carrefour_es_serp_fetcher,carrefour_es_serp_spider|carrefour-es-serp-fetcher",selected= parser == "carrefour_es_serp_fetcher") Keyword Search Results / SERP (carrefour_es_serp_fetcher,carrefour_es_serp_spider) 
+                    //- optgroup(label="Ebay Generic")
+                    //-     option(value="ebay_serp_fetcher,ebay_serp_fetcher_spider|ebay_serp_fetcher_results,ebay_serp_parser_results",selected= parser == "ebay_serp_fetcher") Keyword Search Results / SERP (ebay_serp_fetcher,ebay_serp_fetcher_spider) 
+                    //- optgroup(label="Flipkart Generic")
+                    //-     option(value="flipkart_serp,flipkart_serp_spider|flipkart-serp",selected= parser == "flipkart_serp") Keyword Search Results / SERP (flipkart_serp,flipkart_serp_spider)
+                    //-     option(value="flipkart_reviews,flipkart_reviews_spider|flipkart-reviews",selected= parser == "flipkart_reviews") Fetch Reviews by ItemID &amp; ProductID (flipkart_reviews,flipkart_reviews_spider)
+                    //-     option(value="flipkart_sellers,flipkart_sellers_spider|flipkart-sellers",selected= parser == "flipkart_sellers") Get Seller Information for Flipkart (flipkart_sellers,flipkart_sellers_spider)
+                    //-     option(value="flipkart_product_page,flipkart_product_page_spider|flipkart-products",selected= parser == "flipkart_product_page") Get Product Information for Flipkart (flipkart_product_page,flipkart_product_page_spider)
+                    //- optgroup(label="Firstcry Generic")
+                    //-     option(value="firstcry_serp,firstcry_serp|firstcry_serp_results",selected= parser == "firstcry_serp") Keyword Search Results / SERP (firstcry_serp,firstcry_serp)
+                    //- optgroup(label="Grofers Generic")
+                    //-     option(value="grofers_serp_fetcher,grofers_serp_fetcher|grofers-serp", selected= parser == "grofers_serp_fetcher") Keyword Search Results / SERP (grofers_serp_fetcher,grofers_serp_fetcher)
+                    //- optgroup(label="Lazada Generic")
+                    //-     option(value="lazada_category_fetcher,lazada_category_fetcher|lazada_category_fetcher_results",selected= parser == "lazada_category_fetcher") Categories by URL (lazada_category_fetcher,lazada_category_fetcher)
+                    //-     option(value="lazada_serp_fetcher,lazada_serp_fetcher|lazada_serp_fetcher_results,lazada_serp_parser_results",selected= parser == "lazada_serp_fetcher") Keyword Search Results / SERP (lazada_serp_fetcher,lazada_serp_fetcher)
+                    //-     option(value="lazada_product_fetcher,lazada_product_fetcher|lazada_product_fetcher_results",selected= parser == "lazada_product_fetcher") Get Product Information for Lazada (lazada_product_fetcher,lazada_product_fetcher)
+                    //- optgroup(label="Myntra Generic")
+                    //-     option(value="myntra_serp_fetcher,myntra_serp_fetcher|myntra-serp",selected= parser == "myntra_serp_fetcher") Keyword Search Results / SERP (myntra_serp_fetcher,myntra_serp_fetcher)
+                    //-     option(value="myntra_reviews,myntra_reviews|myntra-reviews",selected= parser == "myntra_reviews") Fetch Reviews by ASIN/Unique Identifer (myntra_reviews,myntra_reviews)
+                    //-     option(value="myntra_product_fetcher,myntra_product_fetcher|myntra_product_fetcher_results,myntra_product_parser_results",selected= parser == "myntra_product_fetcher") Get Product Information for Myntra (myntra_product_fetcher,myntra_product_fetcher)
+                    //- optgroup(label="Nykaa Generic")
+                    //-     option(value="nykaa_serp_fetcher,nykaa_serp_fetcher|nykaa_serp_results",selected= parser == "nykaa_serp_fetcher") Keyword Search Results / SERP (nykaa_serp_fetcher,nykaa_serp_fetcher)
+                    //-     option(value="nykaa_reviews,nykaa_reviews|nykaa_reviews_results",selected= parser == "nykaa_reviews") Fetch Reviews by ASIN/Unique Identifer (nykaa_reviews,nykaa_reviews)
+                    //-     option(value="nykaa_product_fetcher,nykaa_product_fetcher|nykaa_product_fetcher_results,nykaa_product_parser_results",selected= parser == "nykaa_product_fetcher") Get Product Information for Nykaa (nykaa_product_fetcher,nykaa_product_fetcher)
+                    //- optgroup(label="Paytm Mall Generic")
+                    //-     option(value="paytmmall_serp,paytmmall_serp|paytmmall-serp",selected= parser == "paytmmall_serp") Keyword Search Results / SERP (paytmmall_serp,paytmmall_serp)
+                    //- optgroup(label="Rakuten Generic")
+                    //-     option(value="rakuten_category_fetcher,rakuten_category_fetcher_spider|rakuten_category_fetcher_results,rakuten_category_parser_results",selected= parser == "rakuten_category_fetcher") Categories by URL (rakuten_category_fetcher,rakuten_category_fetcher_spider)
+                    //-     option(value="rakuten_serp_fetcher,rakuten_serp_fetcher_spider|rakuten_serp_fetcher_results,rakuten_serp_parser_results",selected= parser == "rakuten_serp_fetcher") Keyword Search Results / SERP (rakuten_serp_fetcher,rakuten_serp_fetcher_spider)
+                    //- optgroup(label="Shopee Generic")
+                    //-     option(value="shopee_category_fetcher,shopee_category_spider|shopee-categories",selected= parser == "shopee_category_fetcher") Categories by URL (shopee_category_fetcher,shopee_category_spider)
+                    //-     option(value="shopee_serp,shopee_serp_spider|shopee-serp",selected= parser == "shopee_serp") Keyword Search Results / SERP (shopee_serp,shopee_serp_spider)
+                    //-     option(value="shopee_reviews,shopee_reviews_spider|shopee-reviews",selected= parser == "shopee_reviews") Fetch Reviews by ASIN/Unique Identifer (shopee_reviews,shopee_reviews_spider)
+                    //-     option(value="shopee_product_page_fetcher,shopee_product_spider|shopee-product",selected= parser == "shopee_product_page_fetcher") Get Product Information for Shopee (shopee_product_page_fetcher,shopee_product_spider)
+                    //- optgroup(label="Tata CLiQ Generic")
+                    //-     option(value="tatacliq_serp_fetcher,tatacliq_serp_fetcher|tatacliq-serp",selected= parser == "tatacliq_serp_fetcher") Keyword Search Results / SERP (tatacliq_serp_fetcher,tatacliq_serp_fetcher)
+                    //-     option(value="tatacliq_reviews,tatacliq_reviews|tatacliq-reviews",selected= parser == "tatacliq_reviews") Fetch Reviews by ASIN/Unique Identifer (tatacliq_reviews,tatacliq_reviews)
+
+                    //-     //- option(value="shopee_category_fetcher,shopee_category_spider|shopee-categories",selected= parser == "shopee_category_fetcher") Categories by URL (shopee_category_fetcher,shopee_category_spider)
+                    //-     //- option(value="shopee_serp,shopee_serp_spider|shopee-serp",selected= parser == "shopee_serp") Keyword Search Results / SERP (shopee_serp,shopee_serp_spider)
+                    //-     //- option(value="shopee_product_page_fetcher,shopee_product_spider|shopee-product",selected= parser == "shopee_product_page_fetcher") Get Product Information for Shopee (shopee_product_page_fetcher,shopee_product_spider)
+
+                    //- optgroup(label="Tokopedia Generic")
+                    //-     option(value="tokopedia_category_fetcher,tokopedia_category_spider|tokopedia-categories",selected= parser == "tokopedia_category_fetcher") Categories by URL (tokopedia_category_fetcher,tokopedia_category_spider)
+                    //-     option(value="tokopedia_serp_fetcher,tokopedia_serp_spider|tokopedia-serp",selected = parser == "tokopedia_serp_fetcher") Keyword Search Results / SERP (tokopedia_serp,tokopedia_serp_spider)
+                    //-     option(value="tokopedia_product_page_fetcher,tokopedia_product_spider|tokopedia-product",selected = parser == "tokopedia_product_page_fetcher") Get Product Information for Tokopedia (tokopedia_product_page_fetcher, tokopedia_product_spider)
+                    //-     option(value="tokopedia_reviews,tokopedia_reviews_spider|tokopedia-reviews",selected = parser == "tokopedia_reviews") Fetch Reviews by ASIN/Unique Identifer (tokopedia_reviews, tokopedia_reviews_spider)
+
+                    //- optgroup(label="Walmart Mexico")
+                    //-     option(value="walmart_serp_fetcher,walmart_serp_fetcher|walmart_serp_fetcher_results",selected= parser == "walmart_serp_fetcher") Keyword Search Results / SERP (walmart_serp_fetcher,walmart_serp_fetcher)
+                    //- optgroup(label="Walmart US")
+                    //-     option(value="walmart_us_serp_fetcher,walmart_us_serp_fetcher|walmart-us-serp-fetcher",selected= parser == "walmart_us_serp_fetcher") Keyword Search Results / SERP (walmart_us_serp_fetcher,walmart_us_serp_fetcher)
+
+        include ./addjob_templates/help_genericurl.pug
+
+        include ./addjob_templates/help_categories_shopee.pug
+
+        include ./addjob_templates/help_categories_blibli.pug
+
+        include ./addjob_templates/help_categories_tokopedia.pug
+
+        include ./addjob_templates/help_categories_lazada.pug
+
+        include ./addjob_templates/help_categories_rakuten.pug
+
+        include ./addjob_templates/help_keywords.pug
+
+        include ./addjob_templates/help_customasin.pug
+
+        include ./addjob_templates/help_customasin_flipkart.pug
+
+        include ./addjob_templates/help_reviews.pug
+
+        include ./addjob_templates/help_qna.pug
+
+        include ./addjob_templates/help_keywords_bol.pug
+
+        include ./addjob_templates/help_keywords_flipkart.pug
+
+        include ./addjob_templates/help_keywords_carrefour_france.pug
+
+        include ./addjob_templates/help_keywords_carrefour_spain.pug
+
+        include ./addjob_templates/help_keywords_carrefour_italy.pug
+
+        include ./addjob_templates/help_keywords_tesco.pug
+
+        include ./addjob_templates/help_keywords_ebay.pug
+
+        include ./addjob_templates/help_keywords_fnac.pug
+
+        include ./addjob_templates/help_keywords_mercadolibre.pug
+
+        
+        include ./addjob_templates/help_reviews_flipkart.pug
+
+
+        include ./addjob_templates/help_reviews_tokopedia.pug
+
+        include ./addjob_templates/help_sellers_flipkart.pug
+        
+        include ./addjob_templates/help_keywords_firstcry.pug
+        include ./addjob_templates/help_keywords_blibli.pug
+        
+        include ./addjob_templates/help_keywords_rakuten.pug
+
+        include ./addjob_templates/help_keywords_nykaa.pug
+
+        include ./addjob_templates/help_keywords_grofers.pug
+
+        include ./addjob_templates/help_keywords_shopee.pug
+
+        include ./addjob_templates/help_keywords_tokopedia.pug
+
+        include ./addjob_templates/help_keywords_lazada.pug
+
+        include ./addjob_templates/help_keywords_bigbasket.pug
+
+        include ./addjob_templates/help_keywords_walmart_mx.pug
+
+        include ./addjob_templates/help_keywords_walmart_usa.pug
+
+        include ./addjob_templates/help_keywords_myntra.pug
+        
+        include ./addjob_templates/help_keywords_paytmmall.pug
+        include ./addjob_templates/help_keywords_tatacliq.pug
+        
+        include ./addjob_templates/help_reviews_nykaa.pug
+
+        include ./addjob_templates/help_reviews_myntra.pug
+        
+
+        include ./addjob_templates/help_reviews_tatacliq.pug
+
+        include ./addjob_templates/help_reviews_shopee.pug
+
+        include ./addjob_templates/help_customasin_blibli.pug
+        include ./addjob_templates/help_customasin_nykaa.pug
+
+        include ./addjob_templates/help_customasin_lazada.pug
+
+        include ./addjob_templates/help_customasin_shopee.pug
+
+        include ./addjob_templates/help_customasin_tokopedia.pug
+
+        include ./addjob_templates/help_customasin_myntra.pug
+
+
+
+
+
+
+        //- div(class="mb-3 row",id="selectspider",style="display:none;")
+        //-     label(for="version",class="col-sm-4 col-form-label") Select Spider Version
+        //-     .col-sm-5
+        //-         select(name="version",id="version",class="form-control",autocomplete="off")
+                    //- option(value="smallv5") Smallv5
+
+        //- div(class="mb-3 row")
+        //-     .col-sm-4
+        //-     .col-sm-8
+        //-         a(href="") Request for a New Parser
+
+        //- div(class="mb-3 row")
+        //-     label(for="output",class="col-sm-4 col-form-label") Select Output Stream
+        //-     .col-sm-5
+        //-         .form-check
+        //-             input(type="checkbox",class="form-check-input",id="output[db]",name="output[db]",disabled="true",checked="true")
+        //-             label(for="output[db]",class="form-check-label") Database
+        //-         div(class="form-check",style="display:none",id="amazon-categories-fetcher-category")
+        //-             input(type="checkbox",class="form-check-input",name="output[category]",id="output[queue_category]")
+        //-             label(for="output[queue_category]",class="form-check-label") Category Queue (category)
+        //-         div(class="form-check",style="display:none",id="amazon-categories-fetcher-raw_cat_file_path")
+        //-             input(type="checkbox",class="form-check-input",name="output[raw_cat_file_path]",id="output[queue_raw_cat_file_path]")
+        //-             label(for="output[queue_raw_cat_file_path]",class="form-check-label") Raw Category File Path Queue (raw_cat_file_path)
+
+
+
+        div(class="mb-3 row")
+            label(for="name",class="col-sm-4 col-form-label") Job Name
+            .col-sm-5
+                input(type="text",name="name",id="name",class="form-control ",value = `${job.name}`)
+        
+        div(class="mb-3 row")
+            
+            label(for="frequency",class="col-sm-4 col-form-label") Select Frequency
+            .col-sm-5
+                - let frequency = job.frequency
+                //- - var selected_city = []
+                //- each pin,cityname in job.source.city
+                //-     h3 #{cityname} 
+                    //- selected_city.append(cityname)
+                //- h3 #{selected_city}
+                
+                  
+                
+                //- h3 #{frequency}
+                select(name="frequency",id="frequency",class="form-select",onchange="")
+                    option(value="ondemand",selected = frequency == "ondemand") On Demand
+                    option(value="*|04:30,08:30,12:30,16:30",selected = frequency == "Daily 4:30, 8:30, 12:30, 16:30 Hrs UTC") Everyday at 10am, 2pm, 6pm, 10pm IST
+                    option(value="*|02:30,08:30,11:30,16:30",selected = frequency == "Daily 2:30, 8:30, 11:30, 16:30 Hrs UTC") Everyday at 8am, 2pm, 5pm, 9pm IST
+                    option(value="*|02",selected = frequency == "Daily 2:0 Hrs UTC") Everyday at 7:30am IST (runs at 2am UTC)
+                    option(value="*|03",selected = frequency == "Daily 3:0 Hrs UTC") Everyday at 8:30am IST (runs at 3am UTC)
+                    option(value="*|04",selected = frequency == "Daily 4:0 Hrs UTC") Everyday at 9:30am IST (runs at 4am UTC)
+                    option(value="*|05:30",selected= frequency == "Daily 5:30 Hrs UTC") Everyday at 11am IST
+                    option(value="*|06:00",selected = frequency == "Daily 6:0 Hrs UTC") Everyday at 11:30am IST
+                    option(value="*|06:30",selected = frequency == "Daily 6:30 Hrs UTC") Everyday at 12pm IST
+                    option(value="*|09:30",selected = frequency == "Daily 9:30 Hrs UTC") Everyday at 3pm IST
+                    option(value="*|10:30",selected = frequency == "Daily 10:30 Hrs UTC") Everyday at 4pm IST
+                    option(value="*|11:30",selected = frequency == "Daily 11:30 Hrs UTC") Everyday at 5pm IST
+                    option(value="*|00,06,12,18",selected = frequency == "Daily 0:0, 6:0, 12:0, 18:0 Hrs UTC") Every 6 Hours (runs at 12am, 6am, 12pm, 6pm UTC)
+                    option(value="*|03,09,15,21",selected = frequency == "Daily 3:0, 9:0, 15:0, 21:0 Hrs UTC") Every 6 Hours (runs at 3am, 9am, 3pm, 9pm UTC)
+                    option(value="*|12",selected = frequency == "Daily 12:0 Hrs UTC") Every 24 Hours (runs at 12pm UTC)
+                    option(value="*|00",selected = frequency == "Daily 0:0 Hrs UTC") Every 24 Hours (runs at 12am UTC)
+                    option(value="*|06",selected = frequency == "Daily 6:0 Hrs UTC" ) Every 24 Hours (runs at 6am UTC)
+                    option(value="*|18",selected = frequency == "Daily 18:0 Hrs UTC") Every 24 Hours (runs at 6pm UTC)
+                    option(value="3|00",selected = frequency == "Wednesdays 0:0 Hrs UTC") Weekly (runs every Wednesday at 12am UTC)
+        div(class="mb-3 row")
+            .col-sm-4
+            .col-sm-8
+                input(type="submit",value="Save Job",class="btn btn-primary") 
+                span &nbsp;
+                if editing
+                    a(href=`/jobs/${clientDetails.id}/${job._id}/details`) Cancel &amp; Go Back
+                else
+                    a(href=`/jobs/${clientDetails.id}`) Cancel &amp; Go Back
+                br
+                small You can run the job once you save it
+                //- Square brackets are needed to be escaped by using double backslash just before opening and closing
+        script. 
+            var page_type = !{JSON.stringify(job.source.page_type)}
+            showSourceType($("#sourceType").val());
+            showDomain($("#sourceData\\[keywords\\]\\[domain\\]").val(),!{editing});
+            showCurrentDomain($("#sourceData\\[customasin\\]\\[domain\\]").val(),!{editing});
+            currentBrowserKeywords(!{JSON.stringify(domain)},!{JSON.stringify(browser)},!{editing});
+            currentBrowserReviews(!{JSON.stringify(domain)},!{JSON.stringify(browser)},!{editing});
+            currentBrowserCategories(!{JSON.stringify(domain)},!{JSON.stringify(browser)},!{editing});
+            currentBrowserCustomAsin(!{JSON.stringify(domain)},!{JSON.stringify(browser)},!{editing});
+            currentBrowserAmazonSeller(!{JSON.stringify(domain)},!{JSON.stringify(browser)},!{editing});
+            currentBrowserFlipkartSeller(!{JSON.stringify(domain)},!{JSON.stringify(browser)},!{editing});
+            //- currentBrowserSearchByAsin(!{JSON.stringify(domain)},!{JSON.stringify(browser)},!{editing});
+            //-  for keywords job pantry fresh displays the list of cities while editing job
+            showAZSearch(page_type)  
+            //-  for customasin job pantry fresh displays the list of cities while editing job
+            showAmazonCustomAsin(page_type) 
+            //-  for keywords job grocery displays the list of cities while editing job
+            showFlipSearch(page_type)
+            //- for customasin job grocery displays the list of cities while editing job
+            showFlipkartCustomAsin(page_type)
+            showDetails(parser)
+            
+            
+            
+            //- document.getElementById("sourceData[keywords][page_type]").value=job.source.page_type
+            //- console.log(`${job}`)
+            //- showDetails($("#parser").val())
+            //- console.log(document.getElementById('sourceData[keywords][domain]').value)
+            //- console.log($("#sourceData\\[keywords\\]\\[domain\\]").val())
+            //- showDomain($("#sourceData[keywords][domain]").val())
+        script.
+            //-* Adding the frequency in the frequency dropdown and selecting it on editing the job
+            //- * only if the frequency is not available in the code/ 'freq_arr' below
+            let freq_arr = ["On Demand","Daily 4:30, 8:30, 12:30, 16:30 Hrs UTC","Daily 2:30, 8:30, 11:30, 16:30 Hrs UTC","Daily 2:0 Hrs UTC","Daily 3:0 Hrs UTC","Daily 4:0 Hrs UTC","Daily 5:30 Hrs UTC","Daily 6:0 Hrs UTC","Daily 6:30 Hrs UTC","Daily 9:30 Hrs UTC","Daily 10:30 Hrs UTC","Daily 11:30 Hrs UTC","Daily 0:0, 6:0, 12:0, 18:0 Hrs UTC","Daily 3:0, 9:0, 15:0, 21:0 Hrs UTC","Daily 12:0 Hrs UTC","Daily 0:0 Hrs UTC","Daily 6:0 Hrs UTC","Daily 18:0 Hrs UTC","Wednesdays 0:0 Hrs UTC"]
+            let custom_freq,day,option_text = "";
+                if (freq_arr.indexOf("!{job.frequency}") == -1 && !{editing} == true){
+                    day = "!{job.frequency}".split(' ')[0]
+                    //console.log("298-->",day) // Daily, Fridays, Wednesdays etc
+                    let freq;
+                    switch(day){
+                        case "Daily":
+                            freq = '*'
+                            break;
+                        case "Sundays":
+                            freq = 0
+                            break;
+                        case "Mondays":
+                            freq = 1
+                            break;
+                        case "Tuesdays":
+                            freq = 2
+                            break;
+                        case "Wednesdays":
+                            freq = 3
+                            break;
+                        case "Thursdays":
+                            freq = 4
+                            break;
+                        case "Fridays":
+                            freq = 5
+                            break;
+                        case "Saturdays":
+                            freq = 6
+                            break;
+                        default:
+                            freq = null
+                    }
+                
+                    let delimiter1 = day;
+                    let delimiter2 = "Hrs";
+                    let time_string = "!{job.frequency}".match(`${delimiter1}(.*)${delimiter2}`);
+                    let time = time_string[1].trim().replaceAll(" ", "")
+                    custom_freq = `${freq}|${time}`
+                    option_text = `${day} at ${time} UTC`
+                    let option = document.createElement("option");
+                    option.text = option_text
+                    option.value = custom_freq
+                    option.selected = `${day} ${time} Hrs UTC`
+                    let select = document.getElementById("frequency");
+                    select.appendChild(option);
+                }
+            var city_obj = !{JSON.stringify(city)};
+            //- //- console.log(city_obj) 
+            var city_name = Object.keys(city_obj)
+            
+            var source_type = !{JSON.stringify(job.source.type)};
+            var len =  city_name.length;
+            var domain = !{JSON.stringify(domain)};
+            var pg_type = !{JSON.stringify(page_type)} ;
+            for (let i =0;i<len;i++){
+                if (domain === "WWW.BIGBASKET.COM" && source_type === "keywords"){
+                    addPincode(city_name[i],"pincodesbb",city_obj[city_name[i]])
+                }
+                else if(domain === "WWW.BIGBASKET.COM" && source_type === "customasin"){
+                    addPincodeCustomAsin(city_name[i],"customasinpincodesbb",city_obj[city_name[i]])
+                }
+                else if (domain === "WWW.GROFERS.COM" && source_type === "keywords"){
+                    addPincode(city_name[i],"pincodesgf",city_obj[city_name[i]])
+                }
+                else if (domain === "BLINKIT.COM" && source_type === "keywords"){
+                    addPincode(city_name[i],"pincodesbk",city_obj[city_name[i]])
+                }
+                else if (domain === "WWW.JIOMART.COM" && source_type === "keywords"){
+                    addPincode(city_name[i],"pincodesjm",city_obj[city_name[i]])
+                }
+                 else if (domain === "WWW.DMART.IN" && source_type === "keywords"){
+                    addPincode(city_name[i],"pincodesdm",city_obj[city_name[i]])
+                }
+                else if (domain === "BLINKIT.COM" && source_type === "customasin"){
+                    addPincodeCustomAsin(city_name[i],"customasinpincodesbk",city_obj[city_name[i]])
+                }                
+                else if (domain === "WWW.SWIGGY.COM" &&  source_type === "keywords"){
+                    addPincode(city_name[i],"pincodessg",city_obj[city_name[i]])
+                }
+                else if (domain === "WWW.SWIGGY.COM" &&  source_type === "customasin"){
+                    addPincodeCustomAsin(city_name[i],"customasinpincodessg",city_obj[city_name[i]])
+                }
+                else if (domain === "NYKAA-COM-SELENIUM" && source_type === "customasin"){
+                    addPincodeCustomAsin(city_name[i],"customasinpincodesnykaa",city_obj[city_name[i]])
+                }
+                else if (domain === "WWW.AMAZON.IN" &&  source_type === "keywords" &&  (pg_type === "pantry" || pg_type === "fresh") ){
+                    addPincode(city_name[i],"pincodesAMZIN",city_obj[city_name[i]])
+                }
+                else if (domain === "AMAZON-IN-SELENIUM" && source_type === "customasin" && (pg_type === "pantry" || pg_type === "fresh")){
+                    addPincodeCustomAsin(city_name[i],"customasinpincodesamzselenium",city_obj[city_name[i]])
+                }
+                else if (domain === "FLIPKART.COM" &&  source_type === "keywords" &&  (pg_type === "grocery") ){
+                    addPincode(city_name[i],"pincodesFLIPKART",city_obj[city_name[i]])
+                }
+                else if (domain === "FLIPKART.COM" &&  source_type === "customasin"){
+                    addPincodeCustomAsin(city_name[i],"customasinpincodesflipregular",city_obj[city_name[i]])
+                }
+                else if (domain === "FLIPKART-COM-SELENIUM" && source_type === "customasin" && (pg_type === "grocery") ){
+                    addPincodeCustomAsin(city_name[i],"customasinpincodesflipselenium",city_obj[city_name[i]])
+                }
+
+                
+            }

@@ -1,0 +1,192 @@
+div(id="categories",class=" ",style="display:none")
+    div(class="mb-3 row")
+        label(for="sourceData[categories][data]",class="col-sm-4 col-form-label") Categories URL
+        .col-sm-5
+            textarea(name="sourceData[categories][data]",id="sourceData[categories][data]",class="form-control",rows="10")= job.source.modifiedData
+
+    div(class="mb-3 row")
+        label(for="sourceData[keywords][domain]",class="col-sm-4 col-form-label") Select Domain
+        .col-sm-5
+            - let domain_categories = job.source.domain
+            select(name="sourceData[categories][domain]",id="sourceData[categories][domain]",class="form-select",autocomplete="off",onclick=`showDomainCategories(this.value,${editing}),currentBrowserCategories("${domain}","${browser}",${editing})`)
+                - let all_categories = []
+                each domain in domain_info
+                    if domain.crawlerType == "categories"
+                        - all_categories.push(domain.domainNickName)
+                - all_categories.sort()
+                each domain_nick_name in all_categories
+                    each mydomain in domain_info 
+                        if mydomain.crawlerType == "categories" && mydomain.domainNickName === domain_nick_name
+                            option(value = `${mydomain.domainName}`,selected = domain_categories == `${mydomain.domainName}`) #{mydomain.domainNickName}
+                //- option(value="BLIBLI.COM",selected=domain == "BLIBLI.COM") Blibli.com (Indonesia)
+                //- option(value="WWW.LAZADA.CO.ID",selected=domain == "WWW.LAZADA.CO.ID") Lazada.co.id (Indonesia)
+                //- option(value="WWW.LAZADA.COM.MY",selected=domain == "WWW.LAZADA.COM.MY") Lazada.com.my (Malaysia)
+                //- option(value="WWW.LAZADA.COM.PH",selected=domain == "WWW.LAZADA.COM.PH") Lazada.com.ph (Philippines)
+                //- option(value="WWW.LAZADA.SG",selected=domain == "WWW.LAZADA.SG") Lazada.sg (Singapore)
+                //- option(value="WWW.LAZADA.CO.TH",selected=domain == "WWW.LAZADA.CO.TH") Lazada.co.th (Thailand)
+                //- option(value="WWW.LAZADA.VN",selected=domain == "WWW.LAZADA.VN") Lazada.vn (Vietnam)
+                //- option(value="RANKING.RAKUTEN.CO.JP",selected=domain == "RANKING.RAKUTEN.CO.JP") Rakuten.co.jp (Japan)
+                //- option(value="SHOPEE.CO.ID",selected=domain == "SHOPEE.CO.ID") Shopee.co.id (Indonesia)
+                //- option(value="SHOPEE.COM.MY",selected=domain == "SHOPEE.COM.MY") Shopee.com.my (Malaysia)
+                //- option(value="SHOPEE.PH",selected=domain == "SHOPEE.PH" ) Shopee.ph (Philippines)
+                //- option(value="SHOPEE.SG",selected=domain == "SHOPEE.SG") Shopee.sg (Singapore)
+                //- option(value="SHOPEE.CO.TH",selected=domain == "SHOPEE.CO.TH" ) Shopee.co.th (Thailand)
+                //- option(value="SHOPEE.VN",selected=domain == "SHOPEE.VN" ) Shopee.vn (Vietnam)
+                //- option(value="TOKOPEDIA.COM",selected=domain == "TOKOPEDIA.COM") Tokopedia.com (Indonesia)
+    div(class="mb-3 row")
+        label(for="sourceData[categories][crawlinglanguage]",class="col-sm-4 col-form-label") Default Crawling Language
+        .col-sm-5
+            - let crawler_language_categories = job.source.crawlinglanguage
+            select(name="sourceData[categories][crawlinglanguage]",id="sourceData[categories][crawlinglanguage]",class="form-select",autocomplete="off")
+                option(value="",selected = crawler_language_categories == "") English (where applicable)
+                option(value="native",selected = crawler_language_categories == "native") Native Language
+    div(class="mb-3 row")
+            label(for="sourceData[categories][batchsize]",class="col-sm-4 col-form-label") Batch Size
+                .form-text
+                    ul
+                        li Ideally Batch Size for Categories Job is 1
+                        li Only Positive Number can be provided as input
+            .col-sm-5
+                input(type = "number", min = "1", list="sourceData[categories][batchsize]", name="sourceData[categories][batchsize]", class = "form-control" ,value = `${batchsize}`,autocomplete = "off", placeholder = "Input Custom Batch Size or Select from the List")
+                datalist(name="sourceData[categories][batchsize]",id="sourceData[categories][batchsize]")
+                    option(value = 1) For Categories Type Job
+    div(class="mb-3 row")
+        label(for="sourceData[categories][browser]",class="col-sm-4 col-form-label") Browser Interface &amp; Max Pages to Crawl (if applicable)
+        .col-sm-3
+            //- - let browser = job.source.browser
+            select(name="sourceData[categories][browser]",id="sourceData[categories][browser]",class="form-select",autocomplete="off")
+                //- option(value="desktop",selected=browser == "desktop") Desktop
+                //- option(value="mobile",selected=browser == "mobile") Mobile
+        .col-sm-2
+            - let maxpage = job.source.maxpages
+            select(name="sourceData[categories][maxpages]",id="sourceData[categories][maxpages]",class="form-select",autocomplete="off")
+                - var n = 1
+                while n < 100
+                    - var page = 'Pages'
+                    - if (n == 1) page = 'Page'
+                    //- option(value=`${n}`,selected=n == 10
+                    //- ) First #{n} #{page}
+                    option(value=`${n}`,selected=maxpage == n) First #{n} #{page}
+                    - n = n+1
+    script.
+        let selectedDomainCategories
+        //- Search in Domain dropdown
+        $(document).ready(function()  
+        {
+            $('#sourceData\\[categories\\]\\[domain\\]').select2({width:'100%'});
+            $('#sourceData\\[categories\\]\\[domain\\]').one('select2:open', function(e) {
+                $('input.select2-search__field').prop('placeholder', 'Search Domain Here');
+            });
+        });
+        //- ! Below Comments are must read before any editing performed and in understanding the Code!
+        //- ! Making "selectedDomainCategories" a global variable to access it in the below functions.
+        function showDomainCategories(currentDomain,isEditing){
+            //-!  The value of selectedDomainCategories is declared as global variable and is used in the below currentBrowserCategories function.Because not able to retrive the current value from same function(currentBrowserCategories()).
+            selectedDomainCategories = currentDomain
+        } 
+            //- ! The 'domain' argument in the below function is used to populate the domain while clicking on edit button which outputs to prefilled Job form.
+        function currentBrowserCategories(domain,browser,editing){
+                //-? Only domain passed in the above function is current value while browser and editing is fetched from the backend db collection where job is saved.
+                //- * Storing all the domain information below after stringifying in variable allDomainInformation.
+                let allDomainInformation = !{JSON.stringify(domain_info)}
+                if(editing == false) {
+                    //- * Emptying the browsers value on changing the domain which triggers the function again. Without
+                    //- * emptying the browser interface getting stacked.
+                    $('#sourceData\\[categories\\]\\[browser\\]').html("")
+                    //- * Currently selected domain is consoled below.Selected means selected from dropdown.
+                    console.log("Current domain selected for crawler type Categories is",selectedDomainCategories)
+                    for(let row of allDomainInformation){
+                        //- ? While adding the job after selecting the domain populating the browserInterface.
+                        if (row.crawlerType=="categories" && row.domainName==selectedDomainCategories)
+                        {
+                            if(row.browserInterface[0] == "desktop"){
+                                document.getElementById("sourceData[categories][browser]").append(new Option("Desktop","desktop"));
+                            }
+                            if(row.browserInterface[0] == "mobile"){
+                                document.getElementById("sourceData[categories][browser]").append(new Option("Mobile","mobile"));
+                            }   
+                            if(row.browserInterface[1] == "mobile"){
+                                document.getElementById("sourceData[categories][browser]").append(new Option("Mobile","mobile"));
+                            }
+                            if(row.browserInterface[1] == "desktop"){
+                                document.getElementById("sourceData[categories][browser]").append(new Option("Desktop","desktop"));
+                            }
+                        }
+                    }
+                }
+                else if(editing == true){
+                    console.log("Current selected domain for crawler Type Categories is",domain,"and saved browser before editing is",browser,"with editing status",editing)
+                    //- * Emptying the browsers value on change which triggers the function again. Without
+                    //- * emptying the browser interface get stacked.
+                    $('#sourceData\\[categories\\]\\[browser\\]').html("")
+                    for(let row of allDomainInformation){
+                        if ((row.crawlerType=="categories" && row.domainName==selectedDomainCategories)){  
+                            let browsers = row.browserInterface
+                            //- Below console gives the value of browsers for the given domain in an array when selected during updating the edit job form. 
+                            console.log("Browser Interface available for selected domain of categories crawler type are "+ browsers)
+                            if(browsers.length == 1){
+                                let current_browser = browsers[0]
+                                if (current_browser == "desktop")
+                                    { 
+                                    document.getElementById("sourceData[categories][browser]").append(new Option("Desktop","desktop"));
+                                    }
+                                if (current_browser == "mobile")
+                                    {
+                                    document.getElementById("sourceData[categories][browser]").append(new Option("Mobile","mobile"));   
+                                    }
+                            }
+                            else if(browsers.length == 2){
+                                //-    ?  If browser contains 2 interfaces (mobile and desktop) then populating browser Interface is slightly diffrent.
+                                //-     ? The below code handles the situations if while adding the browser Interface on Keystone under New Crawler section whether the sequence is <desktop mobile> or <mobile desktop>.
+                                let current_browser1
+                                let current_browser2
+                                if(browsers[0] == "mobile" && browsers[1] == "desktop"){
+                                    current_browser1 = "mobile"
+                                    current_browser2 = "desktop"
+                                }
+                                else if(browsers[0] == "desktop" && browsers[1] == "mobile"){
+                                    current_browser1 = "desktop"
+                                    current_browser2 = "mobile"
+                                }
+                                //- ? Always ensuring the value of given domain from frontend is equal to "mobile" and "desktop" only with ANY SEQUENCE.
+                                if (domain == selectedDomainCategories && browser ==  "desktop" && current_browser2=="mobile" && current_browser1 == "desktop"){
+                                        document.getElementById("sourceData[categories][browser]").append(new Option("Desktop","desktop",null,true));
+                                        document.getElementById("sourceData[categories][browser]").append(new Option("Mobile","mobile"));
+                                }
+                                else if (domain == selectedDomainCategories &&   browser ==  "desktop" && current_browser2=="desktop" && current_browser1 == "mobile"){
+                                        document.getElementById("sourceData[categories][browser]").append(new Option("Desktop","desktop",null,true));
+                                        document.getElementById("sourceData[categories][browser]").append(new Option("Mobile","mobile"));
+                                }
+                                else if (domain == selectedDomainCategories && browser == "mobile" && current_browser2 == "desktop" && current_browser1 == "mobile"){
+                                        document.getElementById("sourceData[categories][browser]").append(new Option("Mobile","mobile",null,true));
+                                        document.getElementById("sourceData[categories][browser]").append(new Option("Desktop","desktop"));
+                                }
+                                else if (domain == selectedDomainCategories && browser == "mobile" && current_browser2 == "mobile" &&  current_browser1 == "desktop"){
+                                        document.getElementById("sourceData[categories][browser]").append(new Option("Mobile","mobile",null,true));
+                                        document.getElementById("sourceData[categories][browser]").append(new Option("Desktop","desktop"));
+                                }
+                                //-?
+
+                                //- ? In case of updating to new domain there are only two possiblites as in the below code
+                                else if(domain != selectedDomainCategories && current_browser1 == "desktop" && current_browser2 == "mobile" ){
+                                        //- console.log("New Domain")
+                                        document.getElementById("sourceData[categories][browser]").append(new Option("Desktop","desktop",null,true));
+                                        document.getElementById("sourceData[categories][browser]").append(new Option("Mobile","mobile"));
+                                }
+                                else if(domain != selectedDomainCategories &&  current_browser1 == "mobile" && current_browser2 == "desktop"){
+                                        document.getElementById("sourceData[categories][browser]").append(new Option("Mobile","mobile"));
+                                        document.getElementById("sourceData[categories][browser]").append(new Option("Desktop","desktop",null,true));
+                                }
+                            }
+                        }
+                    }
+                }
+        }
+        //- showDomainCategories function below is called only when the page loads on adding and editing.It brings value of current domain
+        //- Categories crawler which in turn sets the value of browser Interface.
+        showDomainCategories($("#sourceData\\[categories\\]\\[domain\\]").val(),!{editing});  //-?This finds the current value of top most domain for selected Type of Crawler.
+        $('#sourceData\\[categories\\]\\[domain\\]').on('select2:select', function (e) {
+            //- Calling the functions when the value from domain dropdown is changed.
+            showDomainCategories($("#sourceData\\[categories\\]\\[domain\\]").val(),!{editing});  //-?This finds the current value of top most domain for selected Type of Crawler.
+            currentBrowserCategories($("#sourceData\\[categories\\]\\[domain\\]").val(),"!{browser}",!{editing}); //-? From the value of Domain received the function sets the value of browser Interface
+            });

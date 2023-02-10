@@ -1,0 +1,85 @@
+extends ../layouts/master.pug
+
+block content
+        
+        h2 Monitoring
+
+        h5 
+            b  Production Data Migration Jobs
+
+        p
+            | These jobs are meant for inter and intra server data migration.
+            | Created and managed by only Postgres Admin. 
+            
+        table(class="table table-striped table-hover table-lg") 
+            thead(class="thead-dark")
+                tr
+                    th(scope="col") #
+                    th(scope="col") Client
+                    th(scope="col") Schedule
+                    th(scope="col") Job details (Client Id/Job Class/Job Type)
+
+                    th(scope="col") Query
+                    th(scope="col") Status
+                    
+                    tbody 
+                    - let i = 0
+                    each post in posts
+                        -i = i + 1
+                        tr
+                            th(scope="post") #{i}
+                            td
+                                if post.clientname === "Not Available"
+                                    span #{post.clientname}
+                                else
+                                    span 
+                                        a(href=`/jobs/${post.client_id}` data-toggle="tooltip" data-placement="bottom" title=`See ${post.clientname} Jobs`) #{post.clientname} (#{post.client_id})  
+                            td
+                                - let schedule = post.schedule
+                                - let frequency = cronstrue.toString(schedule);
+                                span UTC #{frequency.slice(3)} 
+                            td(id ="query" style = "display:none") #{post.command}
+                            td           
+                                if  post.client_id !== null
+                                    span • #{post.client_id} 
+                                if post.job_class !== null 
+                                    span • #{post.job_class}  
+                                if post.job_type !== null 
+                                    span • #{post.job_type} 
+                                
+                                //- else
+                                //-     span • #{post.client_id} • #{post.job_class} • #{post.job_type}                 
+                                    //- span #{post.client_id}&emsp;&emsp;                  
+                                    //- span #{post.job_class}&emsp;&emsp;
+                                    //- span #{post.job_type}
+                            td 
+                                a(href="#" class ="query-data" style="text-decoration:underline;" data-bs-toggle="modal" data-bs-target="#exampleModal") Show 
+
+                                
+                            td 
+                               if post.active === true 
+                                    span(class = "text-success") Enabled 
+                               else
+                                    span(class = "text-danger") Disabled
+        div(class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true")
+            div(class="modal-dialog modal-xl" role="document")
+                div(class="modal-content")
+                    div(class="modal-header")
+                        h4(class="modal-title" id="exampleModalLabel") Query
+                        button(type="button" class = "btn-close" data-bs-dismiss="modal" aria-label="Close")
+       
+                    div(class="modal-body")
+                        pre(id="table-query") 
+                        
+                    div(class="modal-footer")
+                        button(type="button" class="btn btn-secondary" data-bs-dismiss="modal") Close
+        script.
+            $(function () {
+                $(".query-data").click(function() {    
+                    var query = $(this).parents("tr").find("#query").text();
+                    //- document.getElementById("#table-query").innerHTML = query    or .innerText = query
+                    //-  or we can use text function of jquery as below.
+                    $("#table-query").text(query)
+
+            })
+            })

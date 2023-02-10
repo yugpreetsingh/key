@@ -1,0 +1,188 @@
+extends ../layouts/master.pug
+
+block content
+        //- p(id="view-template-head" style="overflow:auto;")
+        h2 CSV Upload
+        h3 
+            b Update Entity Tables
+        p  This page is designed to help you to insert, upload and update with previous records with updated data/latest data.
+          br         
+          | (PFM, Product Master, Keyword Category, Search Volume, Client Mapping Table, Keyword Category Channel)
+
+        p
+            h4 
+                b| Step 1 - Download Template
+            p Ownership of template updation: Abhay, Dharmendra
+        br
+        
+        form(id="templateSampleDownload",style = "font-weight:normal;font-size:18px;")
+                div(class="alltemplates" style="display:flex;")
+                    select(name="selectedTemplatesDownload"  id="selectedTemplatesDownload" onchange='changeTemplate(this.value)' style="height:2.6em;margin-top:-1.4em;width:25.3em")
+                        option(value="" disabled selected) -- Select Template Type --
+                        option(value="BUD") BUD - Base Unit Per Day
+                        option(value="CFL") CFL - Category Feature List
+                        option(value="CCS") CCS - Client Category Subcategory
+                        option(value="CCM") CCM - Client Channel Mapping
+                        option(value="CLG") CLG - Client Logo
+                        option(value="CSV") CSV - Content Score v2
+                        option(value="CKS") CKS - Country Channel Keyword Search Volume
+                        option(value="CSC") CSC - Country Channel SV Substitute Country Channel
+                        option(value="KWC") KWC - Keyword Category
+                        option(value="PFM") PFM - Product Feature Mapping
+                        option(value="PMS") PMS - Product Master
+                        option(value="RUM") RUM - Rank Unit Metadata 
+                        option(value="RUP") RUP - Rank Unit Metadata Parent
+                    
+                    p 
+                        a(class="btn btn-primary" id="urlLink"  type = "submit" style = "width:160px;margin-left:2.5em;margin-top:-2.2em") Download
+                    p
+                        button(class="myBtn btn btn-dark" type="button" data-bs-toggle="modal" data-bs-target="#templateModal" onclick = 'showTemplateModal()' id="urlLinkTemplate" style = "width:160px;margin-left:2.5em;margin-top:-2.2em" disabled) Show Template
+
+                        //- a(class="myBtn btn btn-dark" id="urlLinkTemplate" data-bs-toggle="modal" type="submit" data-bs-target="#templateModal" style = "width:160px;margin-left:2.5em;margin-top:-2.2em") Show Template
+                
+                    //- p(id="view-template-head") #{template_heads}
+
+                        //- button(class="btn btn-dark" id="templateButton" style = "width:160px;margin-left:2.5em;margin-top:-2.2em") Show Template
+                    div(class="modal fade" tabindex="-1" role="dialog" id="templateModal" aria-labelledby="templateModalLabel" aria-hidden="true")
+                        div(class="modal-dialog  modal-xl" role="document" style = "width:5000em;")
+                            div(class="modal-content")
+                                div(class="modal-header")
+                                    h5(class="modal-title" id="viewTemplate")
+                                    button(type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close")
+                                div(class="modal-body")
+                                    p(id="view-template-head" style="overflow:auto;") 
+                                    //- table(id="table" class="table-sm")
+                                    //-     thead(class="thead-dark")
+                                    //-         tr
+                                    //-             td 
+                                    //-         tr 
+                                    //-             td
+                                    //-         tr
+                                    //-             td
+                                    //-         tr
+                                    //-             td
+                                div(class="modal-footer")
+                                    button(type="button" class="btn btn-secondary" data-bs-dismiss="modal") Close
+                                    
+        p 
+            h4 
+                b| Step 2 - Fill in the template
+            br
+            | Ownership: BI Team
+            br
+            | After downloading the template, please fill in the information as per the required format. If you need
+            |assistance, please reach out to your supervisor.
+            br
+            | Please ensure all mandatory columns are available in CSV file and they are filled in correctly.
+            br
+            b IMPORTANT - Please open and save the file using "CSV UTF-8" instead of "CSV".
+        p 
+            h4 
+                b| Step 3 - Upload the filled CSV
+            br
+            | Ownership: BI Team
+            br
+            | Sample CSV file: PFM_30March2022.csv
+        br
+        form(id="templateSampleUpload" action="/admin/upload-csv",method="POST", enctype="multipart/form-data" style = "font-weight:normal;font-size:18px;")
+            select(name="selectedTemplatesUpload"  id="selectedTemplatesUpload"  style="height:2.6em;margin-top:-1.4em;width:25.3em")
+                        option(value="" disabled selected) -- Select Template Type --
+                        option(value="BUD") BUD - Base Unit Per Day
+                        option(value="CFL") CFL - Category Feature List
+                        option(value="CCS") CCS - Client Category Subcategory
+                        option(value="CCM") CCM - Client Channel Mapping
+                        option(value="CLG") CLG - Client Logo
+                        option(value="CSV") CSV - Content Score v2
+                        option(value="CKS") CKS - Country Channel Keyword Search Volume
+                        option(value="CSC") CSC - Country Channel SV Substitute Country Channel
+                        option(value="KWC") KWC - Keyword Category
+                        option(value="PFM") PFM - Product Feature Mapping
+                        option(value="PMS") PMS - Product Master
+                        option(value="RUM") RUM - Rank Unit Metadata 
+                        option(value="RUP") RUP - Rank Unit Metadata Parent
+                
+                
+            br
+            label(for="fileupload") Select a file to upload
+            br
+            input(type="file" name="csv" value="fileUpload" id="fileUpload" accept=".csv" accept-charset="utf-8" disabled)
+            br
+            br
+            button(type="submit" id="submitFile" value="Upload and Validate" disabled) Upload and Validate
+            input(type="checkbox" name="applyValidation" value="applyValidation" id="applyValidation" checked)
+            label(for="applyValidation") Apply validations for selected template!
+        script.
+            let selected_temp_download
+            let selected_temp_upload
+            function changeTemplate(value) {
+
+                 selected_temp_download = document.getElementById('selectedTemplatesDownload').value;
+                 let url=`/admin/get-csv/template/${selected_temp_download}`;
+                 document.getElementById('urlLink').href=url;
+               
+            }
+             function showTemplateModal(){
+                
+                console.log("Template selected to download",selected_temp_download)
+                
+                let template_url=`/admin/show_template/${selected_temp_download}`;
+                //showTemplate function is called in common.js where the template_url argument is passed
+                showTemplate(template_url)
+                    .then((data)=>
+                    { // Data in variable "data" is sent from file csvUpload.js from templateModal function of controllers folder (type string) which in turn is fetched 
+                    // with the help of fetch api from common.js function showTemplate and is returned here.
+                        let html = '<table class="table table-striped table-hover table-lg">'
+                        let idx = 0
+                        for(let row of data.split("\n")) { //splitting the data on basis of newline \n.
+                            //- To remove the last empty row index is checked if its length is data.split("\n").length-1
+                            if(idx<data.split("\n").length-1){
+                            html += '<tr>'
+                            for(let cell of row.split(',')){
+                                html += (idx==0)?'<th>':'<td>'
+                                html += cell
+                                html += (idx==0)?'<th>':'<td>'
+                            }
+                            idx += 1
+                            }  
+                        }
+                        html += '</table>'
+                        document.getElementById("viewTemplate").innerText = selected_temp_download + " Template Reference"
+                        document.getElementById("view-template-head").innerHTML = html
+                    })
+                    .catch((e)=>console.log(e));
+                }
+                $('#urlLinkTemplate').attr('disabled',true)
+                $('#selectedTemplatesDownload').change(
+                    function(){
+                        if ($(this).val()){
+                            $('#urlLinkTemplate').removeAttr('disabled'); 
+                            }
+                            else {
+                                $('#urlLinkTemplate').attr('disabled',true);
+                                }
+                                });     
+
+
+
+                $('#submitFile:submit').attr('disabled',true);
+                $('input:file').change(
+                    function(){
+                        if ($(this).val()){
+                            $('#submitFile').removeAttr('disabled'); 
+                            }
+                            else {
+                                $('#submitFile').attr('disabled',true);
+                                }
+                                });
+                
+                                
+                $('#fileUpload:file').attr('disabled',true);
+                $('#selectedTemplatesUpload').change(
+                    function(){
+                        if ($(this).val()){
+                            $('#fileUpload').removeAttr('disabled'); 
+                            }
+                            else {
+                                $('#fileUpload').attr('disabled',true);
+                                }
+                                });

@@ -1,0 +1,114 @@
+extends ../layouts/master.pug
+
+block content
+    //- h2 All Jobs 
+
+    div.tabbable-line
+        ul#myTab.nav.nav-tabs(role='tablist')
+            li.nav-item(role='presentation')
+                a#upcomingJobs-tab.nav-link.active(data-bs-toggle='tab' data-bs-target='#upcomingJobs'  role='tab' aria-controls='upcomingJobs' aria-selected='true') Upcoming Jobs (in Next 5 hours)&nbsp;
+            li.nav-item(role='presentation')
+                a#recent-tab.nav-link(data-bs-toggle='tab' data-bs-target='#recentJobs'  role='tab' aria-controls='recentJobs' aria-selected='true') #{`Recent ${numJobs} Jobs`}
+        #myTabContent.tab-content.overflow-auto
+            #upcomingJobs.tab-pane.active.p-2(role='tabpanel' aria-labelledby='upcomingJobs-tab')
+
+                if upcomingJobs.length
+                    .table-responsive.mb-3()
+                        table(class="table table-striped table-hover table-sm ")
+                            thead(class="thead-dark")
+                                tr
+                                    th(scope="col") #
+                                    th(scope="col") Client
+                                    th(scope="col") Job
+                                    th(scope="col") Scheduled Time
+                                    th(scope="col") Domain
+                                    th(scope="col") Spider
+                                    th(scope="col") Target
+                            tbody
+                                each job, index in upcomingJobs
+                                    - const client = clients.find(client => client.id == job.clientId)
+                                    - let date = moment().hours(job.time[0].hours).minutes(job.time[0].minutes)
+                                    - let date2 = date
+                                    - date =  date.unix()
+                                    tr
+                                        td(scope="row") #{index + 1 }
+                                        td 
+                                            a(href=`/jobs/${client.id}/`,data-toggle="tooltip",data-placement="bottom",title=`See ${client.name} Jobs`) #{client.name} (#{client.id})
+                                        td
+                                            if job.jobType === 'ContentScore' 
+                                                a(href=`/jobs/${client.id}/${job._id}/details`,data-toggle="tooltip",data-placement="bottom",title=`See Job Details`) #{job.name}
+                                                span(class="badge badge-pill bg-primary" ) ContentScore
+                                            else
+                                                a(href=`/jobs/${client.id}/${job._id}/details`,data-toggle="tooltip",data-placement="bottom",title=`See Job Details`) #{job.name}
+                                        td  
+                                            span(class = "time", data-finalDate = `${date}`)
+                                            br
+                                            //- moment().fromNow is not applicable on unix converted date that is why original date saved in variable date2 is used here.
+                                            small (#{moment(date2).fromNow()})
+                                        td #{job.source.domain}
+                                        td
+                                            if job.parser !== undefined
+                                                | #{job.parser.startingSpider}
+                                            else
+                                                | Not Available
+                                        td #{job.source.data.length}
+                else
+                    p No upcoming jobs
+
+            #recentJobs.tab-pane.fade.p-2(role='tabpanel' aria-labelledby='recentJobs-tab')
+
+                if jobs.length
+                    .table-responsive()
+                        table(class="table table-striped table-hover table-sm")
+                            thead(class="thead-dark")
+                                tr
+                                    th(scope="col") #
+                                    th(scope="col") Client
+                                    th(scope="col") Job
+                                    th(scope="col") Last Run
+                                    th(scope="col") Domain
+                                    th(scope="col") Spider
+                                    th(scope="col") Target
+                                    th(scope="col") Processed
+                                    th(scope="col") Last Crawl Update
+                            tbody
+                                each job, index in jobs
+                                    - const client = clients.find(client => client.id == job.clientId)
+                                    - const diff = job.lastCrawl ? moment().diff(moment(job.lastCrawl.time), 'minutes') : 1000; // 1000 for stopped job which never ran
+                                    - const bgColor  = diff >= 15 && job.source.data.length !== job.numProcessed ? "yellow" : "";
+                                    - let date = moment.tz(job.createdAt,timezone)
+                                    - date =  date.unix()
+                                    - let date2 = moment(job.createdAt).fromNow()    
+                                    tr
+                                        td(scope="row") #{index + 1 }
+                                        td 
+                                            a(href=`/jobs/${client.id}/`,data-toggle="tooltip",data-placement="bottom",title=`See ${client.name} Jobs`) #{client.name}
+                                        td 
+                                            a(href=`/jobs/${client.id}/${job.job._id}/details`,data-toggle="tooltip",data-placement="bottom",title=`See Job Details`) #{job.job.name}
+                                        td                    
+                                            a(href=`/jobs/${client.id}/${job.job._id}/results/${job._id}`,data-toggle="tooltip",data-placement="bottom",title="See Results" class = "time", data-finalDate = (`${date}`)) 
+                                            br
+                                            small (#{date2})
+                                        td #{job.source.domain}
+                                        td 
+                                            if job.parser !== undefined
+                                                | #{job.parser.startingSpider}
+                                            else
+                                                | Not Available
+                                        td #{job.source.data.length}
+                                        td(style=`background-color: ${bgColor}`) #{job.numProcessed}
+                                        td(style=`background-color: ${bgColor}`)
+                                            
+                                            if job.lastCrawl
+                                                - let mydate = moment.tz(job.lastCrawl.time,timezone)
+                                                - mydate =  mydate.unix()
+                                                - let mydate2 = moment(job.lastCrawl.time).fromNow()
+                                                a(href=`/jobs/${client.id}/${job.job._id}/results/${job._id}/${job.job.parser.collections[0]}`,data-toggle="tooltip",data-placement="bottom",title="See Results") #{mydate2}
+                                                br
+                                                //- small (#{moment(job.lastCrawl.time).format('DD-MMM-YYYY LTS ')})
+                                                small 
+                                                    span(class = "time", data-finalDate = (`${mydate}`))
+                                            else
+                                                | Never
+                else
+                    p No jobs available

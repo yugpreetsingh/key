@@ -1,0 +1,87 @@
+
+nav#sidebar.sidebar-wrapper.border-end.shadow-sm
+
+    .sidebar-content
+        //- .sidebar-brand
+        //-     a(href='/performance-overview') Reviniti
+        //-     #close-sidebar
+        //-         i.fa.fa-reorder
+        //- .sidebar-header
+
+        //-     .user-pic.text-white.circle.text-center.h-100
+        //-         i.fa.fa-user.fa-2x
+        //-     .user-info
+        //-         span.user-name
+        //-             | Name
+        //-         a.user-status(href="/auth/logout" role="button")
+        //-             i.fa.fa-sign-out
+        //-             span Logout
+        .sidebar-menu
+            ul
+                if (session.passport)
+                    li(class=(tab === "a1" ? "active" : undefined))
+                        a.nav-link(href="/") 
+                            i.fa.fa-home
+                            span Home
+                    li(class=(tab === "a2" ? "active" : undefined))
+                        a.nav-link(href="/clients") 
+                            i.fa.fa-user
+                            span Clients
+                    li(class=(tab === "a3" ? "active" : undefined))
+                        a.nav-link(href="/clients") 
+                            i.fa.fa-tasks
+                            span Jobs
+                    li(class=(tab === "a5" ? "active" : undefined))
+                        a.nav-link(href="/monitoring")
+                            i.fa.fa-binoculars
+                            span Monitoring
+                    li(class=(tab === "a4" ? "active" : undefined))
+
+                    //-     a.nav-link(href="/parsers") Parsers
+                    //- li(class=(tab==='a5'?"nav-item active":"nav-item"))
+                    //-     a.nav-link(href="/monitor") Monitor
+                    //- li(class=(tab==='a6'?"nav-item active":"nav-item"))
+                    
+                    //- li(class="nav-item")
+                    //-     a(class="nav-link text-light bg-info",href="https://unraveler.1digitalstack.com/captcha/list",target="_new") Captcha
+
+            
+                    li.sidebar-dropdown
+                        a(href='#')
+                            i.fa.fa-cog
+                            span Admin
+                        .sidebar-submenu
+                            ul.list-unstyled
+                                li()
+                                    a(href="/admin/etlconfig")
+                                        |   Etl Config
+                                    .sidebar-submenu
+                                        ul.list-unstyled
+                                            li()
+                                                a(href='/etlconfig/getconfig')
+                                                    | Get ETL Config
+                                    a(href="/admin/prefectconfig")
+                                        |   Prefect Config
+                                    .sidebar-submenu
+                                        ul.list-unstyled
+                                            li()
+                                                a(href='/prefectconfig/getallconfig')
+                                                    | Get Prefect Config
+                                    a(href="/admin/template")
+                                        |   CSV Upload
+                                    a(href="/admin/dbcrawler")
+                                        |   New Crawler
+                                    
+                    
+        //- .sidebar-footer.pt-2.d-none
+        //-     a#bellBtn( data-bs-toggle="collapse" href="#notifications" role="button" aria-expanded="false" aria-controls="notifications")
+        //-         i.fa.fa-bell.fs-5
+        //-         span.badge.rounded-pill.bg-warning.notification.text-dark 3
+        //-     a(href='#')
+        //-         i.fa.fa-cog.fs-5
+        //-     a(href='#')
+        //-         i.fa.fa-power-off.fs-5
+        //- include ../includes/notifications.pug
+
+       
+

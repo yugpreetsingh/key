@@ -1,0 +1,20 @@
+div(class="form-group row",style="display:none;",id="parserinfo-amazon_qna,amazon_qna_spider|amazon-qna")
+    .col-sm-4
+    .col-sm-5
+        div(class="form-text alert alert-info")
+            strong The "Fetch Q&amp;A by ASIN" pipeline contains 1 segment
+            ol
+                li Fetching &amp; Processing of Questions and Answers by visiting direct link using ASIN
+            div
+                strong Output
+                ol
+                    li List of questions and all of their answers
+                    li The primary answer is also provided separately
+                    li Profile of user who answered the question
+            div
+                em
+                    strong Note: 
+                    ul
+                        li The sorting is always by Date (sort_order='SUBMIT_DATE')
+                        li All questions are retrieved irrespective of whether they have answers or not (only_answered=False)
+                        li The "All Answers" list also contains the "Primary Answer"

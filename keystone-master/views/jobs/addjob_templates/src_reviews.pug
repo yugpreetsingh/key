@@ -1,0 +1,218 @@
+div(id="reviews",class="",style="display:none")
+    div(class="mb-3 row")
+        label(for="sourceData[reviews][data]",class="col-sm-4 col-form-label") List of Product Identifers
+            ul.form-text
+                li One Per Line
+                li Product Identifiers are Case Sensitive
+                li
+                    strong Formats
+                    ul
+                        li Amazon (One ASIN per line)
+                        li Flipkart (Each line to contain ItemID and ProductID, separated by a colon)
+
+                li Example - Amazon:
+                    pre.
+                        B07H9Y6YHX
+                        B01ND1R7Y0
+                li Example - Flipkart:
+                    pre.
+                        ItemID:ProductID
+                        itm07bd49805407d:COMFRH6ZTRTQETDV
+                        
+        .col-sm-5
+            textarea(name="sourceData[reviews][data]",id="sourceData[reviews][data]",class="form-control",rows="10",onchange="countLines(this.id,'asinLines')",onkeyup="countLines(this.id,'asinLines')")=job.source.modifiedData
+            div.mt-2
+                input(type="button",value="Clean Up (Sort and Unique)",class="btn btn-sm btn-warning",onclick="cleanText('sourceData[reviews][data]')") 
+                span.mt-2
+                    strong
+                        span  ASINs Found: 
+                        span#asinLines 
+                script.
+                    countLines('sourceData[reviews][data]','asinLines')
+
+    div(class="mb-3 row")
+        label(for="sourceData[reviews][domain]",class="col-sm-4 col-form-label") Search Domain
+        .col-sm-5
+            - let domain_reviews = job.source.domain
+            select(name="sourceData[reviews][domain]",id="sourceData[reviews][domain]",class="form-select",autocomplete="off",onclick=`showDomainReviews(this.value,${editing}),currentBrowserReviews("${domain}","${browser}",${editing})`)
+                - let all_review_domains = []
+                each domain in domain_info
+                    if domain.crawlerType == "reviews"
+                        - all_review_domains.push(domain.domainNickName)
+                - all_review_domains.sort()
+                each domain_nick_name in all_review_domains
+                    each mydomain in domain_info 
+                        if mydomain.crawlerType == "reviews" && mydomain.domainNickName == domain_nick_name
+                            option(value = `${mydomain.domainName}`,selected=domain_reviews == `${mydomain.domainName}`) #{mydomain.domainNickName}
+                //- each domain in domain_info
+                //-     if domain.crawlerType == "reviews"
+                //-         option(value = `${domain.domainName}`,selected=domain_reviews == `${domain.domainName}`) #{domain.domainNickName}
+
+                //- option(value="WWW.AMAZON.FR",selected= doms=="WWW.AMAZON.FR") Amazon.fr (France)
+                //- option(value="WWW.AMAZON.IN",selected= doms=="WWW.AMAZON.IN") Amazon.in (India)
+                //- option(value="WWW.AMAZON.CO.JP",selected= doms=="WWW.AMAZON.CO.JP") Amazon.co.jp (Japan)
+                //- option(disabled,value="WWW.AMAZON.COM",selected=doms=="WWW.AMAZON.COM") Amazon.com (USA)
+                //- option(value="FLIPKART.COM",selected=doms=="FLIPKART.COM") Flipkart.com (India)
+                //- option(value="WWW.MYNTRA.COM",selected=doms=="WWW.MYNTRA.COM") Myntra.com (India)
+                //- option(value="WWW.NYKAA.COM",selected=doms=="WWW.NYKAA.COM") Nykaa.com (India)
+                //- option(value="SHOPEE.CO.ID",selected=doms=="SHOPEE.CO.ID") Shopee.co.id (Indonesia)
+                //- option(value="SHOPEE.COM.MY",selected=doms=="SHOPEE.COM.MY") Shopee.com.my (Malaysia)
+                //- option(value="SHOPEE.PH",selected=doms=="SHOPEE.PH") Shopee.ph (Philippines)
+                //- option(value="SHOPEE.SG",selected=doms=="SHOPEE.SG") Shopee.sg (Singapore)
+                //- option(value="SHOPEE.CO.TH",selected=doms=="SHOPEE.CO.TH") Shopee.co.th (Thailand)
+                //- option(value="SHOPEE.VN",selected=doms=="SHOPEE.VN") Shopee.vn (Vietnam)
+                //- option(value="TATACLIQ.COM",selected=doms=="TATACLIQ.COM") Tatacliq.com (India)
+                //- option(value="TOKOPEDIA.COM",selected=doms=="TOKOPEDIA.COM") Tokopedia.com (Indonesia)
+    div(class="mb-3 row")
+        label(for="sourceData[reviews][crawlinglanguage]",class="col-sm-4 col-form-label") Default Crawling Language
+        .col-sm-5
+            - let crawler_language_reviews = job.source.crawlinglanguage
+            select(name="sourceData[reviews][crawlinglanguage]",id="sourceData[reviews][crawlinglanguage]",class="form-select",autocomplete="off")
+                option(value="",selected = crawler_language_reviews == "") English (where applicable)
+                option(value="native",selected = crawler_language_reviews == "native") Native Language
+    div(class="mb-3 row")
+            label(for="sourceData[reviews][batchsize]",class="col-sm-4 col-form-label") Batch Size
+                .form-text
+                    ul
+                        li Ideally Batch Size for Reviews Job is 1
+                        li Only Positive Number can be provided as input
+            .col-sm-5
+                input(type = "number", min = "1", list="sourceData[reviews][batchsize]", name="sourceData[reviews][batchsize]", class = "form-control" ,value = `${batchsize}`,autocomplete = "off", placeholder = "Input Custom Batch Size or Select from the List")
+                datalist(name="sourceData[reviews][batchsize]",id="sourceData[reviews][batchsize]")
+                    option(value = 1) For Reviews Type Job
+    div(class="mb-3 row")
+        label(for="sourceData[reviews][browser]",class="col-sm-4 col-form-label") Browser Interface
+        .col-sm-5
+            select(name="sourceData[reviews][browser]",id="sourceData[reviews][browser]",class="form-select",autocomplete="off")
+                //- option(value="desktop") Desktop
+                //- option(disabled, value="mobile") Mobile
+
+    //- div(class="mb-3 row")
+    //-     label(for="sourceData[reviews][screenshot]",class="col-sm-4 col-form-label") Save a Screenshot
+    //-         ul
+    //-             li Please keep in mind that each screenshot will take up additional disk space apart from the product page
+    //-     .col-sm-5
+    //-         select(name="sourceData[reviews][screenshot]",id="sourceData[reviews][screeshot]",class="form-control",autocomplete="off")
+    //-             option(value="no") No. Screenshot not required.
+    //-             option(disabled,value="yes") Yes. Screenshot is required.
+    script.
+        let selectedDomainReviews
+        //- Search in Domain dropdown
+        $(document).ready(function()  
+        {
+            $('#sourceData\\[reviews\\]\\[domain\\]').select2({width:'100%'});
+            $('#sourceData\\[reviews\\]\\[domain\\]').one('select2:open', function(e) {
+                $('input.select2-search__field').prop('placeholder', 'Search Domain Here');
+            });
+        });
+        //- ! Below Comments are must read before any editing performed and in understanding the Code!
+        //- ! Making "selectedDomainReviews" a global variable to access it in the below functions.
+        function showDomainReviews(currentDomain,isEditing){
+            //-!  The value of selectedDomainReviews is declared as global variable and is used in the below currentBrowserReviews function.Because not able to retrive the current value from same function(currentBrowserReviews()).
+            selectedDomainReviews = currentDomain
+        } 
+            //- ! The 'domain' argument in the below function is used to populate the domain while clicking on edit button which outputs to prefilled Job form.
+        function currentBrowserReviews(domain,browser,editing){
+                //-? Only domain passed in the above function is current value while browser and  is fetched from the backend db collection where job is saved.
+                //- * Storing all the domain information below after stringifying in variable allDomainInformation.
+                let allDomainInformation = !{JSON.stringify(domain_info)}
+                if(editing == false) {
+                    //- * Emptying the browsers value on changing the domain which triggers the function again. Without
+                    //- * emptying the browser interface getting stacked.
+                    $('#sourceData\\[reviews\\]\\[browser\\]').html("")
+                    //- * Currently selected domain is consoled below.Selected means selected from dropdown.
+                    console.log("Current domain selected for crawler type Reviews is",selectedDomainReviews)
+                    for(let row of allDomainInformation){
+                        //- ? While adding the job after selecting the domain populating the browserInterface.
+                        if (row.crawlerType=="reviews" && row.domainName==selectedDomainReviews)
+                        {
+                            if(row.browserInterface[0] == "desktop"){
+                                document.getElementById("sourceData[reviews][browser]").append(new Option("Desktop","desktop"));
+                            }
+                            if(row.browserInterface[0] == "mobile"){
+                                document.getElementById("sourceData[reviews][browser]").append(new Option("Mobile","mobile"));
+                            }   
+                            if(row.browserInterface[1] == "mobile"){
+                                document.getElementById("sourceData[reviews][browser]").append(new Option("Mobile","mobile"));
+                            }
+                            if(row.browserInterface[1] == "desktop"){
+                                document.getElementById("sourceData[reviews][browser]").append(new Option("Desktop","desktop"));
+                            }
+                        }
+                    }
+                }
+                else if(editing == true){
+                    console.log("Current selected domain for crawler Type Reviews is",domain,"and saved browser before editing is",browser,"with editing status",editing)
+                    //- * Emptying the browsers value on change which triggers the function again. Without
+                    //- * emptying the browser interface get stacked.
+                    $('#sourceData\\[reviews\\]\\[browser\\]').html("")
+                    for(let row of allDomainInformation){
+                        if ((row.crawlerType=="reviews" && row.domainName==selectedDomainReviews)){  
+                            let browsers = row.browserInterface
+                            //- Below console gives the value of browsers for the given domain in an array when selected during updating the edit job form. 
+                            console.log("Browser Interface available for selected domain of reviews crawler type are "+ browsers)
+                            if(browsers.length == 1){
+                                let current_browser = browsers[0]
+                                if (current_browser == "desktop")
+                                    { 
+                                        document.getElementById("sourceData[reviews][browser]").append(new Option("Desktop","desktop"));
+                                    }
+                                if (current_browser == "mobile")
+                                    {
+                                        document.getElementById("sourceData[reviews][browser]").append(new Option("Mobile","mobile"));   
+                                    }
+                            }
+                            else if(browsers.length == 2){
+                            //-    ?  If browser contains 2 interfaces (mobile and desktop) then populating browser Interface is slightly diffrent.
+                            //-     ? The below code handles the situations if while adding the browser Interface on Keystone under New Crawler section whether the sequence is <desktop mobile> or <mobile desktop>.
+                                let current_browser1
+                                let current_browser2
+                                if(browsers[0] == "mobile" && browsers[1] == "desktop"){
+                                    current_browser1 = "mobile"
+                                    current_browser2 = "desktop"
+                                }
+                                else if(browsers[0] == "desktop" && browsers[1] == "mobile"){
+                                    current_browser1 = "desktop"
+                                    current_browser2 = "mobile"
+                                }
+                                //- ? Always ensuring the value of given domain from frontend is equal to "mobile" and "desktop" only with ANY SEQUENCE.
+                                if (domain == selectedDomainReviews && browser ==  "desktop" && current_browser2=="mobile" && current_browser1 == "desktop"){
+                                    document.getElementById("sourceData[reviews][browser]").append(new Option("Desktop","desktop",null,true));
+                                    document.getElementById("sourceData[reviews][browser]").append(new Option("Mobile","mobile"));
+                                }
+                                else if (domain == selectedDomainReviews &&   browser ==  "desktop" && current_browser2=="desktop" && current_browser1 == "mobile"){
+                                    document.getElementById("sourceData[reviews][browser]").append(new Option("Desktop","desktop",null,true));
+                                    document.getElementById("sourceData[reviews][browser]").append(new Option("Mobile","mobile"));
+                                }
+                                else if (domain == selectedDomainReviews && browser == "mobile" && current_browser2 == "desktop" && current_browser1 == "mobile"){
+                                    document.getElementById("sourceData[reviews][browser]").append(new Option("Mobile","mobile",null,true));
+                                    document.getElementById("sourceData[reviews][browser]").append(new Option("Desktop","desktop"));
+                                }
+                                else if (domain == selectedDomainReviews && browser == "mobile" && current_browser2 == "mobile" &&  current_browser1 == "desktop"){
+                                    document.getElementById("sourceData[reviews][browser]").append(new Option("Mobile","mobile",null,true));
+                                    document.getElementById("sourceData[reviews][browser]").append(new Option("Desktop","desktop"));
+                                }
+                                //-?
+                                //- ? In case of updating to new domain there are only two possiblites as in the below code
+                                else if(domain != selectedDomainReviews && current_browser1 == "desktop" && current_browser2 == "mobile" ){
+                                    //- console.log("New Domain")
+                                    document.getElementById("sourceData[reviews][browser]").append(new Option("Desktop","desktop",null,true));
+                                    document.getElementById("sourceData[reviews][browser]").append(new Option("Mobile","mobile"));
+                                }
+                                else if(domain != selectedDomainReviews &&  current_browser1 == "mobile" && current_browser2 == "desktop"){
+                                    document.getElementById("sourceData[reviews][browser]").append(new Option("Mobile","mobile"));
+                                    document.getElementById("sourceData[reviews][browser]").append(new Option("Desktop","desktop",null,true));
+                                }
+                            }
+                        }
+                    }
+                }
+        }       
+        //- showDomainReviews function below is called only when the page loads on adding and editing.It brings value of current domain
+        //- Reviews crawler which in turn sets the value of browser Interface.
+        showDomainReviews($("#sourceData\\[reviews\\]\\[domain\\]").val(),!{editing});  //-?This finds the current value of top most domain for selected Type of Crawler.
+        $('#sourceData\\[reviews\\]\\[domain\\]').on('select2:select', function (e) {
+            //- Calling the functions when the value from domain dropdown is changed.
+            showDomainReviews($("#sourceData\\[reviews\\]\\[domain\\]").val(),!{editing});  //-?This finds the current value of top most domain for selected Type of Crawler.
+            currentBrowserReviews($("#sourceData\\[reviews\\]\\[domain\\]").val(),"!{browser}",!{editing}); //-? From the value of Domain received the function sets the value of browser Interface
+            });

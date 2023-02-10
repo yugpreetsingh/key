@@ -1,0 +1,62 @@
+extends ../layouts/master.pug
+block content 
+        h2.d-flex.flex-column.flex-sm-row.justify-content-between
+            div
+                | Hidden Jobs List for 
+                span.text-danger
+                    a(href=`/jobs/${clientDetails.id}` data-bs-toggle="tooltip" data-bs-placement="bottom" title="Go to Active Jobs") #{clientDetails.name}
+        h6 Total Hidden Jobs - #{hiddenJobs.length}
+        if hiddenJobs.length!=0        
+            .table-responsive
+                table(class="table table-striped table-sm table-hover"  style ="table-layout: auto; width: 100px:")
+                    thead(class="thead-dark")
+                        tr()
+                            th(scope="col") #
+                            th(scope="col") Name
+                            th(scope="col") Added On
+                            th(scope="col") Parser Pipeline
+                            th(scope="col") Frequency   
+                            th(scope="col" width="100") Total Runs
+                            th(scope="col") Last Run
+                            th(scope="col") Unhide
+                        tbody
+                            - let j = 0
+                            each hidden_job in hiddenJobs
+                                - j = j+1
+                                tr()          
+                                    th(scope="row") #{j}
+                    
+                                    td 
+                                        a(href=`/jobs/${clientDetails.id}/${hidden_job._id}/details`,data-bs-toggle="tooltip",data-bs-placement="bottom",title="View Job Details") #{hidden_job.name}
+                                        br
+                                        small (#{hidden_job._id})
+                                        - let myfinalDate = moment.tz(hidden_job.createdAt,timezone)
+                                        - myfinalDate =  myfinalDate.unix()
+                                    td 
+                                        span(class = "time", data-finalDate = `${myfinalDate}`)
+                                    td
+                                        if hidden_job.parser 
+                                            p #{hidden_job.parser.pipeline} (#{hidden_job.parser.startingSpider})
+                                        else 
+                                            p #{hidden_job.parserPipeline} (#{hidden_job.parserStartingSpider})
+
+                                    td #{(hidden_job.frequencyReadable)}
+                                    td  
+                                        a(href=`/jobs/${clientDetails.id}/${hidden_job._id}/details#runs`,data-bs-toggle="tooltip",data-bs-placement="bottom",title="See All Runs") #{hidden_job.totalRuns}
+                                    td
+                                        - let added_date = moment.tz(hidden_job.lastRunBatchId.createdAt,timezone)
+                                        - added_date =  added_date.unix()
+                                        - let added_date2 = moment(hidden_job.lastRunBatchId.createdAt).fromNow()
+                                        if Object.keys(hidden_job.lastRunBatchId).length > 0
+                                            a(href=`/jobs/${clientDetails.id}/${hidden_job._id}/results/${hidden_job.lastRunBatchId._id}`,data-bs-toggle="tooltip",data-bs-placement="bottom",title="See Results") #{added_date2} 
+                                            br
+                                            small  &nbsp;
+                                                span(class = "time", data-finalDate = `${added_date}`)           
+                                        else
+                                            span Never
+                                    td
+                                        div(style = "display:flex; text-align: center;white-space: nowrap;margin-top:4px;")
+                                            a.btn.btn-danger.btn-sm.me-1(href=`/jobs/${clientDetails.id}/unhideJob/${hidden_job._id}` onclick=`return confirm('Are you sure you want to restore the job "${hidden_job.name}" back to client ${clientDetails.name} (${clientDetails.id}) ?')`)
+                                                i.fa.fa-eye
+        else
+            p No Hidden Jobs Available    

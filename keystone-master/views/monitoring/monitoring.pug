@@ -1,0 +1,32 @@
+extends ../layouts/master.pug
+
+block content
+
+        h2 Monitoring
+        
+        .table-responsive.mb-3()
+            table(class="table table-striped table-hover table-md") 
+                thead(class="thead-dark")
+                    tr
+                        th(scope="col") S.No.
+                        th(scope="col") Title
+                        th(scope="col") Maintained By
+                    
+                tbody  
+                        tr
+                            td 1
+                            td 
+                                a(href="/monitoring/amsjobs") AMS & Selling Partner Jobs
+                            td Kashif Ahmed
+                        tr
+                            td 2
+                            td 
+                                a(href="/monitoring/cronjobs") Production Data Migration Jobs
+                            td Kashif Ahmed
+                        tr
+                            td 2
+                            td 
+                                a(href="/monitoring/prefectjobs") Failed Prefect Jobs
+                            td Baba Patra
+                   
+                        

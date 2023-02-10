@@ -1,0 +1,125 @@
+extends ../layouts/master.pug
+
+block content
+    h2 Search List
+
+    if results.length > 0
+
+        table(class="table table-striped table-hover table-sm")
+            thead(class="thead-dark")
+                tr
+                    th(scope="col") #
+                    th(scope="col") Name
+                    th(scope="col") Client Name
+                    th(scope="col") Job ID
+                    th(scope="col") Batch Id
+                    th(scope="col") Last Run Batch Id 
+                    th(scope="col") Type Of Job
+                    th(scope="col") Domain
+                    
+            tbody
+            - let i = 0
+            each job in results
+                - i = i+1
+                tr
+                    th(scope="row") #{i}
+                    if "jobId" in job
+                        td 
+                            a(href=`/jobs/${job.clientId}/${job.jobId}/details` title=`See Job Details` data-bs-toggle="tooltip",data-bs-placement="bottom") #{job.name} &nbsp;
+                            span(class="badge badge-pill bg-primary" ) Batch
+                        td 
+                            span #{job.clientName}
+                            br
+                            small
+                                span Id: #{job.clientId}
+                        td #{job.jobId}          
+                            - let date = moment.tz(job.dateAdded,timezone)
+                            - date =  date.unix()   
+                            - let dateAdded = moment(job.dateAdded).format('DD-MMM-YYYY LTS ')
+                            br
+                            small &nbsp;
+                                span(class = "time", data-finalDate = `${date}`)
+                        td
+                            a(href=`/jobs/${job.clientId}/${job.jobId}/results/${job._id}`,data-bs-toggle="tooltip",data-bs-placement="bottom",title="See Results") #{job._id}
+                            - let created_date = moment.tz(job.createdAt,timezone)
+                            - created_date =  created_date.unix()
+                            - let created_date2 = moment(job.createdAt).fromNow() 
+                            br
+                            small &nbsp;
+                                span(class = "time", data-finalDate = `${created_date}`)
+                                br
+                                span #{created_date2} 
+                                    
+                        td 
+                            a(href=`/jobs/${job.clientId}/${job.jobId}/results/${job.lastRunBatchId}`,data-bs-toggle="tooltip",data-bs-placement="bottom",title="See Results") #{job.lastRunBatchId} 
+                            - let lastRun_date = moment.tz(job.lastRunBatchTime,timezone)
+                            - lastRun_date =  lastRun_date.unix()
+                            - let lastRun_date2 = moment(job.lastRunBatchTime).fromNow() 
+                            br 
+                            small &nbsp;
+                                span(class = "time", data-finalDate = `${lastRun_date}`) 
+                                br
+                                span #{lastRun_date2} 
+                                     
+                        td  #{job.source.type}
+                        td  #{job.source.domain}
+                          
+                    else
+                        td
+                            a(href=`/jobs/${job.clientId}/${job._id}/details` title=`See Job Details` data-bs-toggle="tooltip",data-bs-placement="bottom") #{job.name} &nbsp;
+                            span(class="badge badge-pill bg-secondary") Job
+                        td 
+                            span #{job.clientName}
+                            br
+                            small
+                                span Id: #{job.clientId}
+                        td #{job._id}
+                            - let date_added = moment.tz(job.createdAt,timezone)
+                            - date_added =  date_added.unix()
+                            br
+                            small 
+                                span(class = "time", data-finalDate = `${date_added}`) 
+                        td 
+                            if (job.lastRun !== "Job Not Executed Yet")
+                                a(href=`/jobs/${job.clientId}/${job._id}/results/${job.batchId}`,data-bs-toggle="tooltip",data-bs-placement="bottom",title="See Results") #{job.batchId}
+                                - let date = moment.tz(job.lastRun,timezone)
+                                - date =  date.unix()
+                                - let date2 = moment(job.lastRun).fromNow()
+                                br  
+                                small  &nbsp;
+                                    span(class = "time", data-finalDate = `${date}`)
+                                    br
+                                    span #{date2} 
+                                         
+                            else
+                                span #{job.batchId}
+                                small
+                                    br 
+                                    span #{job.lastRun}
+
+                        td 
+                            if (job.lastRun !== "Job Not Executed Yet")
+                                a(href=`/jobs/${job.clientId}/${job._id}/results/${job.batchId}`,data-bs-toggle="tooltip",data-bs-placement="bottom",title="See Results") #{job.batchId}
+                                - let date_1 = moment.tz(job.lastRun,timezone)
+                                - date_1 =  date_1.unix()
+                                - let date_2 = moment(job.lastRun).fromNow()
+                                br  
+                                small  &nbsp;
+                                    span(class = "time", data-finalDate = `${date_1}`)
+                                    br 
+                                    span #{date_2} 
+                                         
+                            else
+                                span #{job.batchId}
+                                small
+                                    br 
+                                    span #{job.lastRun}
+                        td #{job.source.type}
+                        td #{job.source.domain}
+       
+        
+    script. 
+         document.getElementById("searchVal").value ="#{search_field}"
+
+                   
+                    

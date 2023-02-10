@@ -1,0 +1,37 @@
+extends ../layouts/master.pug
+
+block content
+        h2  Monitoring
+        h5
+            b  AMS & Selling Partner Jobs
+
+        p
+            | The following table is maintained by the Database Team. It shows all jobs which are tied to a schedule, and they 
+            br 
+            | fetch data from AMS or from Amazon Selling Partner through APIs or Selenium.
+                
+        h5 Summary of AMS & Selling Partner Jobs
+        div
+            table(class="table table-striped table-hover table-lg") 
+                thead(class="thead-dark")
+                    tr
+                        th(scope="col") #
+                        th(scope="col") Clients
+                        th(scope="col") Total Jobs
+                        th(scope="col") Timezones
+                        th(scope="col") Sources
+                    
+                        tbody 
+                        - let j = 0
+                        //- - console.log(summary)
+                        each row in summary
+                            -j = j + 1
+                            tr
+                                th(nowrap) #{j}                            
+                                - let client_id = row.client_id
+                                td 
+                                    //- a(href=`/jobs/${my_id}` data-toggle="tooltip" data-placement="bottom" title=`See ${row.client_name} Jobs`)  #{row.client_name} 
+                                    a(href=`/monitoring/amsjobs/${client_id}/amsjobDetails` data-toggle="tooltip" data-placement="bottom" title=`See ${row.client_name} Jobs`)  #{row.client_name} 
+                                td #{row.total_jobs}
+                                td #{row.timezone}
+                                td #{row.source}

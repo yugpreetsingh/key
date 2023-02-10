@@ -1,0 +1,865 @@
+extends ../layouts/master.pug
+block content
+   
+    h2.justify-content-between
+        div
+            | Job Details for 
+            span.text-danger 
+                a(href=`/jobs/${clientDetails.id}` title=`See all ${clientDetails.name} jobs` ,data-bs-toggle="tooltip",data-bs-placement="bottom") #{clientDetails.name} 
+            | → #{job.name}
+            if job.isDeleted === true
+                p 
+                    h5.text-danger 
+                        | Hidden jobs cannot be run or updated.
+        div.mt-3.mt-sm-0
+            //- a(href=`/jobs/${clientDetails._id}`,class="btn btn-secondary") Back to all Jobs
+            //-  /:clientId/addNew
+            //- a(href=`/jobs/${clientDetails._id}/${job._id}/run`,class="btn btn-success") Run this Job
+            p
+                div
+                    a(href=`/jobs/${clientDetails.id}`,class="btn btn-secondary me-2") Back to all Jobs
+                    if job.isDeleted !== true
+                        a(href=`/jobs/${clientDetails.id}/${job._id}/run`,class="btn me-2 btn-success") Run this Job
+            
+                        a(href=`/jobs/${clientDetails.id}/editJob/${job._id}`,class="btn me-2 btn-dark") Update this Job
+
+                        a(href=`/jobs/${clientDetails.id}/hideJob/${job._id}`,class="btn me-2 btn-danger" onclick=`return confirm('Are you sure you want to hide the job "${job.name}" of client ${clientDetails.name} (${clientDetails.id}) ?')` title="Hide") Delete this Job
+   
+    table(class="table table-sm  mb-3")
+        tr
+            th(scope="row",width="25%") Identifier
+            td(width="75%") #{job._id}
+
+        tr
+            th(scope="row") Name
+            td #{job.name}
+        tr
+            th(scope="row") Source
+            td.allItemsTd
+                if job.source
+                    if job.source.type == "categories"
+                        | #{job.source.type} • Domain: #{job.source.domain} with Max Pages (if applicable) #{job.source.maxpages}
+                        div 
+                            strong Total URL(s) Searched: #{job.source.data.length}
+                            br
+                            strong URL(s) to Crawl
+                        div#allItems.showFewItems()
+                            each item in job.source.data
+                                div(class="d-inline-block")
+                                    span(class="badge badge-pill bg-success display-inline-block") #{item} 
+                                    span(class="text-light") • 
+                        a#showAllItems.btn.btn-link.btn-sm(role="button" data-bs-toggle="modal" data-bs-target="#allItemsModal") Show All Items
+                    else if job.source.type == "generic"
+                        | #{job.source.type}
+                        div 
+                            strong Total URL(s) Searched: #{job.source.data.length}
+                            br
+                            strong URL(s) to Crawl
+                        div#allItems.showFewItems()
+                            each item in job.source.data
+                                div(class="d-inline-block")
+                                    span(class="badge badge-pill bg-success display-inline-block") #{item} 
+                                    span(class="text-light") • 
+                        a#showAllItems.btn.btn-link.btn-sm(role="button" data-bs-toggle="modal" data-bs-target="#allItemsModal") Show All Items 
+                    else if job.source.type != "generic" || job.source.type != "categories"
+                        | #{job.source.type} • Domain: #{job.source.domain} with #{job.source.browser}
+                        if job.source.screenshot
+                            | &amp; Screenshot is #{job.source.screenshot}
+                        div
+                            strong Total Items Searched: #{job.source.data.length}
+                        
+                        div#allItems.showFewItems()
+                            each item in job.source.data
+                                div(class="d-inline-block")
+                                    span(class="badge badge-pill bg-success display-inline-block") #{item} 
+                                    span(class="text-light") • 
+                        a#showAllItems.btn.btn-link.btn-sm(role="button" data-bs-toggle="modal" data-bs-target="#allItemsModal") Show All Items
+                        
+                        
+                    else 
+                        | #{job.source.type} • #{job.source.data[0]}
+                else
+                    if job.sourceType == "keywords"
+                        //- For backward compability
+                        - if (job.sourceData.amazon) { job.sourceData.domain = 'AMAZON-' + job.sourceData.amazon}
+                        | #{job.sourceType} • Domain: #{job.sourceData.domain} with #{job.sourceData.browser}
+                        - let keywords = job.sourceData.keywords.replace("\r\n","\n").split("\n")
+                            div
+                                strong Total Keywords Searched: #{keywords.length}
+                            div#allKeywords(style="height:24px;overflow:auto")
+                                each keyword in keywords
+                                    - keyword = keyword.replace("\r","") + "\n"
+                                    div(class="d-inline-block")
+                                        span(class="badge badge-pill bg-success") #{keyword} 
+                                        span(class="text-light")  • 
+                            div#showAllKeywords
+                                input(type="button",class="btn btn-link btn-sm",value="Show All Keywords",onclick="$('#allKeywords').css('height','auto');$('#showAllKeywords').hide()")
+
+                    else if job.sourceType == "customasin"
+                        | #{job.sourceType} • Amazon: #{job.sourceData.amazon} with #{job.sourceData.browser} &amp; Screenshot is #{job.sourceData.screenshot}
+                        - let asins = job.sourceData.asin.replace("\r\n","\n").split("\n")
+                            div
+                                strong Total ASINs Searched: #{asins.length}
+                            div#allASINs(style="height:24px;max-height:400px;overflow:auto")
+                                each asin in asins
+                                    - asin = asin.replace("\r","") + "\n"
+                                    div(class="d-inline-block")
+                                        span(class="badge badge-pill bg-success") #{asin} 
+                                        span(class="text-light")  • 
+                            div#showAllASINs
+                                input(type="button",class="btn btn-link btn-sm",value="Show All ASINs",onclick="$('#allASINs').css('height','auto');$('#showAllASINs').hide()")
+
+                    else if job.sourceType == "amazonseller"
+                        | #{job.sourceType} • Amazon: #{job.sourceData.amazon} with #{job.sourceData.browser} &amp; Screenshot is #{job.sourceData.screenshot}
+                        - let asins = job.sourceData.asin.replace("\r\n","\n").split("\n")
+                            div
+                                strong Total ASINs Searched: #{asins.length}
+                            div#allASINs(style="height:24px;overflow:auto")
+                                each asin in asins
+                                    - asin = asin.replace("\r","") + "\n"
+                                    div(class="d-inline-block")
+                                        span(class="badge badge-pill bg-success") #{asin} 
+                                        span(class="text-light")  • 
+                            div#showAllASINs
+                                input(type="button",class="btn btn-link btn-sm",value="Show All ASINs",onclick="$('#allASINs').css('height','auto');$('#showAllASINs').hide()")
+
+                    else if job.sourceType == "flipkartseller"
+                        | #{job.sourceType} • Flipkart: #{job.sourceData.amazon} with #{job.sourceData.browser} &amp; Screenshot is #{job.sourceData.screenshot}
+                        - let asins = job.sourceData.asin.replace("\r\n","\n").split("\n")
+                            div
+                                strong Total Products Searched: #{asins.length}
+                            div#allASINs(style="height:24px;overflow:auto")
+                                each asin in asins
+                                    - asin = asin.replace("\r","") + "\n"
+                                    div(class="d-inline-block")
+                                        span(class="badge badge-pill bg-success") #{asin} 
+                                        span(class="text-light")  • 
+                            div#showAllASINs
+                                input(type="button",class="btn btn-link btn-sm",value="Show All Products",onclick="$('#allASINs').css('height','auto');$('#showAllASINs').hide()")
+
+
+                    else if job.sourceType == "customurlasin"
+                        | #{job.sourceType} • Amazon: #{job.sourceData.amazon} with #{job.sourceData.browser} &amp; Screenshot is #{job.sourceData.screenshot}
+                        - let urls = job.sourceData.url.replace("\r\n","\n").split("\n")
+                            div
+                                strong Total ASIN URLs Searched: #{urls.length}
+                                span  (only max 100 shown below)
+                            div#allURLs(style="height:24px;overflow:auto")
+                                - urls = urls.splice(0, 100);
+                                each url in urls
+                                    - url = url.replace("\r","") + "\n"
+                                    div(class="d-inline-block")
+                                        span(class="badge badge-pill bg-success") #{url} 
+                                        span(class="text-light")  • 
+                            div#showAllURLs
+                                input(type="button",class="btn btn-link btn-sm",value="Show 100 ASIN URLs",onclick="$('#allURLs').css('height','auto');$('#showAllURLs').hide()")
+
+                    else if job.sourceType == "searchbyasin"
+                        | #{job.sourceType} • Amazon: #{job.sourceData.amazon} with #{job.sourceData.browser} &amp; Screenshot is #{job.sourceData.screenshot}
+                        - let asins = job.sourceData.asin.replace("\r\n","\n").split("\n")
+                            div
+                                strong Total ASINs Searched: #{asins.length}
+                            div#allASINs(style="height:24px;overflow:auto")
+                                each asin in asins
+                                    - asin = asin.replace("\r","") + "\n"
+                                    div(class="d-inline-block")
+                                        span(class="badge badge-pill bg-success") #{asin} 
+                                        span(class="text-light")  • 
+                            div#showAllASINs
+                                input(type="button",class="btn btn-link btn-sm",value="Show All ASINs",onclick="$('#allASINs').css('height','auto');$('#showAllASINs').hide()")
+                    
+                    else if job.sourceType == "reviews"
+                        //- For backward compatibility
+                        - if (job.sourceData.amazon) { job.sourceData.domain = 'AMAZON-' + job.sourceData.amazon}
+                        | #{job.sourceType} • Domain: #{job.sourceData.domain} with #{job.sourceData.browser}
+                        - let asins = job.sourceData.asin.replace("\r\n","\n").split("\n")
+                            div
+                                strong Total Product Identifiers to Fetch: #{asins.length}
+                            div#allASINs(style="height:24px;overflow:auto")
+                                each asin in asins
+                                    - asin = asin.replace("\r","") + "\n"
+                                    div(class="d-inline-block")
+                                        span(class="badge badge-pill bg-success") #{asin} 
+                                        span(class="text-light")  • 
+                            div#showAllASINs
+                                input(type="button",class="btn btn-link btn-sm",value="Show All Product Identifiers",onclick="$('#allASINs').css('height','auto');$('#showAllASINs').hide()")
+
+                    else
+                        | #{job.sourceType} • #{job.sourceData}
+        tr
+            th(scope="row") City (if applicable)
+            td
+                if job.source
+                    if job.source.city
+                        each pin,city in job.source.city
+                            span.text-wrap.text-break #{city} - #{pin} • 
+                    else 
+                        | NA
+                else 
+                    | NA
+
+
+        tr
+            th(scope="row") Search Type (if applicable)
+            td
+                if job.source
+                    if job.source.page_type
+                        | #{job.source.page_type}
+                    else 
+                        | NA
+                else 
+                    | NA
+
+        tr
+            th(scope="row") Proxy Type
+            td
+                if job.source
+                    | #{job.source.proxytype}
+                else 
+                    | NA
+        tr
+            th(scope="row") Seller Information
+            td
+                if job.source
+                    | #{job.source.sellerinfo}
+                else 
+                    | NA
+        tr
+            th(scope="row") Get Sub-categories
+            td
+                if job.source
+                    | #{job.source.recursive}
+                else 
+                    | NA
+        tr
+            th(scope="row") Crawling Language
+            td
+                if job.source
+                    | #{job.source.crawlinglanguage}
+                else 
+                    | NA
+        tr
+            th(scope="row") Batch Size
+            td
+                if job.source
+                    | #{job.source.batchsize}
+                else 
+                    | NA
+        tr
+            th(scope="row") Job Type
+            td 
+                if job.source.type === "customasin" && job.jobType === "ContentScore"
+                    | #{job.jobType}
+                else if job.source.type === "customasin" && job.jobType !== "ContentScore"
+                    | Regular
+                else
+                    | NA
+
+        tr
+            th(scope="row") Parser Pipeline
+            td
+                if job.parser
+                    | #{job.parser.pipeline} • #{job.parser.startingSpider}
+                else 
+                    | #{job.parserPipeline} • #{job.parserStartingSpider}
+        tr
+            th(scope="row") Database Collections
+            td 
+                if job.parser 
+                    | #{job.parser.collections.join(',')}
+                else
+                    | #{job.parserCollections}
+        tr
+            th(scope="row") Frequency
+            td #{job.frequency}
+        tr
+            th(scope="row") Added By
+            td #{job.addedBy.name} (#{job.addedBy.email})
+            //- td #{session.passport.user.displayName} (#{session.passport.user.email})
+        tr
+            - let date = moment.tz(job.createdAt,timezone)
+            //- moment.tz(status.createdAt,timezone)
+            - date =  date.unix()
+            th(scope="row") Created On
+            //- td #{date}
+            td(class = "time", data-finalDate = `${date}`)
+    br
+    h2(id="runs",name="runs" style ="font-size:25px;") Total Runs → #{jobStatus.length}    
+    .table-responsive
+        table(class="table" id = "primary-table")
+            thead(class="thead-light")
+                tr
+                    th(scope="col") #
+                    th(scope="col") Batch Id
+                    th(scope="col") Date Started ▼
+                    th(scope="col") Added From
+                    th(scope="col") Added By
+                    th(scope="col") ETL
+                    th(scope="col") Action
+
+            tbody
+            - let i = 0
+            each status in jobStatus
+                - i = i+1
+                        
+            
+                tr  
+                    - let finalDate = moment.tz(status.createdAt,timezone)
+                    - finalDate =  finalDate.unix()
+                    - let date2 = moment(status.createdAt).fromNow()
+    
+                    td #{i}
+                    td #{status._id}
+               
+               
+                    td 
+                   
+                        span(class = "time", data-finalDate = `${finalDate}`)
+                        br
+                        small  #{date2}
+                    td #{status.addedFrom}
+                    if !status.addedBy
+                        td
+                    else
+                        td #{status.addedBy.name} (#{status.addedBy.email})
+               
+                    if !status.etl_finished
+                        td <span class="badge badge-pill bg-secondary">Pending</span>
+                    else if status.etl_finished == true
+                        td <span class="badge badge-pill bg-success">Finished</span>
+                    else if  status.etl.status === "running"
+                        td <span class="badge badge-pill bg-info">Running</span> 
+                    else if status.etl.status === "failed"
+                        td <span class="badge badge-pill bg-danger">Failed</span>
+
+                    td(style="nowrap")
+                        a(href=`/jobs/${clientDetails.id}/${job._id}/results/${status._id}`,class="btn btn-primary") Results
+                
+                        - let btn_id = status._id
+                        - let parserCollectionLength = status.parser.collections.length
+
+                        button.myBtn.btn.btn-dark.btn_id(data-bs-toggle="modal" data-bs-target=".myModal" type='button',id=btn_id,data-batchid=`${status._id}`,data-searchtype=`${status.source.type}`,data-pagetype=`${status.source.page_type}`,data-finaldate=`${moment.tz(status.createdAt,timezone).unix()}`,data-etltype=`${status.source.domain}  ${status.source.type}`,data-totalrecordsqueried=`${status.source.data.length}`,data-parserCollections=`${status.parser.collections[parserCollectionLength-1]}` data-parserPipeline=`${status.parser.pipeline}` data-databaseCollection=`${status.parser.collections}`) ETL Status
+
+    
+    
+    script.
+        $(document).ready(function(){
+
+            //- save the batch ID for use in refresh button fucntion
+            let batchId;
+
+            //- save the parser-Collection-Name for use in refresh function
+            let parserCollectionName;
+            let parserPipeline;
+            let pageType;
+            let searchType;
+
+            //- save the database names for use in refresh function
+            let databaseNameArray;
+
+            let flowName;
+            //- ETL recommendation variables
+            let recommendation;
+            let text_color;
+            let btn_color;
+            let timeDiff;
+            let parseTime;
+
+            $(".myBtn").click(function(){
+
+                //- get the batch ID when `Run ETL` button is clicked.
+                batchId = this.id;
+                //- reset the recommendation,flow-run-id,current etl-status,batch-flowId
+                document.getElementById("batch-flowrun-id").innerHTML = '';
+                document.getElementById("batch-flowstatus").innerHTML = '';
+                document.getElementById("batch-flowid").innerHTML = '';
+                recommendation = '';                
+                
+                //- update data in etl_prefect_status in jobStatuses collection and show in modal
+                $("#batch-id").html($("#"+batchId).data("batchid"))
+                $("#batch-ETLtype").html($("#"+batchId).data("etltype"))
+                $("#batch-totalrecordsqueried").html($("#"+batchId).data("totalrecordsqueried"))
+                $("#batch-flowname").html($("#"+batchId).data("flowname"))
+                $("#batch-pagetype").html($("#"+batchId).data("pagetype"))
+                
+                let utcTime = document.getElementById(batchId).getAttribute("data-finaldate");
+                document.getElementById("batch-started").setAttribute("data-finaldate",utcTime);
+                Timezone_Calc();
+                
+                //- Get database collection
+                databaseNameArray = document.getElementById(batchId).getAttribute("data-databaseCollection").split(",");
+
+                //- Get the number of records found
+                getTotalRecordsFound(databaseNameArray,batchId)
+                    .then((recordsObject) => {
+                        //- inject the number of record found into modal window
+                        let key_array = Object.keys(recordsObject);
+                        
+                        let value_array = Object.values(recordsObject);
+                        let final_data = [];
+
+                        for(let i=0;i<key_array.length;i++){
+                            final_data.push(`${key_array[i].toUpperCase() }`+" = "+`${value_array[i] }`)
+                        }
+
+                        document.getElementById("batch-recordsfound").innerHTML = final_data;
+                    })
+                    .catch((err) => console.log(err));
+                
+                //- Get the recommended threshold for ETL time from etl-config collection in mongoDB
+                //- Get the `flowName` using Parser-Pipeline
+                parserCollectionName = document.getElementById(batchId).getAttribute("data-parserCollections");
+
+                parserPipeline = document.getElementById(batchId).getAttribute("data-parserPipeline");
+
+                searchType = document.getElementById(batchId).getAttribute("data-searchtype");
+                pageType = document.getElementById(batchId).getAttribute("data-pagetype");
+
+                //- for legacy jobs, who doesn't have page_type explicitly mentioned
+                if(searchType === "keywords" && pageType === "undefined"){
+                    pageType = "serp";
+                    document.getElementById("batch-pagetype").innerHTML = pageType;
+                    document.getElementById(batchId).setAttribute("data-pagetype",pageType);
+                }
+
+                getconfigByName(parserPipeline,pageType)
+                    .then((etlFlowData) => {
+                        //- get prefectServerId from incoming etl-config
+                        let prefectServerId = etlFlowData.ETLdata.prefectServerId;
+
+                        document.getElementById("batch-threshold").innerHTML = etlFlowData.ETLdata.threshold + " Seconds " + `(${secondsToHms(etlFlowData.ETLdata.threshold)} )`;
+
+                        let threshold_value = parseInt(document.getElementById("batch-threshold").innerHTML);
+
+                        document.getElementById("batch-flowname").innerHTML = flowName = etlFlowData.ETLdata.etlFlowName;
+
+                        //- get project name
+                        let projectName = etlFlowData.ETLdata.etlProjectName;
+
+                        //- get latest fetch from parser collection's crawl time info.
+                        //- Call a function to internally hit mongoose collection `parser-collection` to get latest fetch time
+                        getParserData(batchId,parserCollectionName)
+                            .then((data) => {
+                                parseTime = data.parseTime;
+                                document.getElementById("etl-now-btn").disabled = false;
+
+                                if(data.timeDiff){
+                                    timeDiff = data.timeDiff;
+                                    let unixLastFetch = moment(parseTime).unix();
+                                    document.getElementById("batch-lastfetch").setAttribute("data-finaldate",unixLastFetch);
+                                    Timezone_Calc();
+                                    document.getElementById("batch-lastfetch").style["color"] = "Black";
+                                } else {
+                                    //- set the last fetch to "Not available yet" if timeDiff === "Not available yet";
+                                    document.getElementById("batch-lastfetch").innerHTML = "NOT AVAILABLE YET";
+                                    document.getElementById("batch-lastfetch").style["color"] = "RED";
+                                }
+                                //- Get flow-run-data from prefect and then combine the last-fetch status and flow-run-data to give
+                                //- ETL recommendation message.
+
+                                //- -------get flow run data from prefect--------
+
+                                //- Add getFlowRunData here so that once the flowname is received, it is passed to getFlowRunData function
+                                //- call a function to internally hit graphQL query to get current etl-status in the current project ONLY.
+                                getFlowRunData(batchId,flowName,projectName,prefectServerId)
+                                    .then((res) => {
+                                        if((Object.keys(res).length !== 0) && (res.state !== "ETL not started yet")) {
+
+                                            document.getElementById("batch-flowrun-id").innerHTML = `<a href=${res.dashboardUri}/default/flow-run/${res.id} target=_new>${res.id}</a>`;
+
+                                            let state = res.state;
+                                            let badge_type;
+                                            if(state === "Success"){
+                                                badge_type = "success";
+                                            }else if(state === "Failed"){
+                                                badge_type = "danger"
+                                            }else if(state === "Running") {
+                                                badge_type = "warning"
+                                            }else {
+                                                badge_type = "secondary"
+                                            }                       
+
+                                            document.getElementById("batch-flowstatus").innerHTML = `<span class="badge badge-pill bg-${badge_type}">${res.state}</span>`
+                                            document.getElementById("batch-flowid").innerHTML = res.flowid;
+
+                                            //- -------ETL recommendation when it has been executed once before--------
+                                            //- i.e., res.status !== "ETL not strted yet"
+                                            //- Few cases of res.status are independent of parseTime such as
+                                            //- "Scheduled","Submitted" and "Running";
+
+                                            if(state === "Scheduled" || state === "Submitted" || state === "Running"){
+                                                recommendation = "ETL already in progress, Do not run as it may cause data duplicity.";
+                                                text_color = "Red";
+                                                btn_color = "Red";
+                                            }
+
+                                            //- check for the availability of "parseTime" in parser collection
+                                            //- check for the status of etl in prefect
+                                            //- check for the time-difference if it's equalto or greater thena threshold_value or not
+                                            //- after checking for all these value, set the recommendation message, recommendation message color and run-etl-now button color
+
+                                            //- check if recommendation message is already set or not
+                                            if(!recommendation){
+                                                if(parseTime && (state === "Success" || state === "Failed")){
+                                                    if(state === "Success"){
+                                                        if(timeDiff>=threshold_value){
+                                                            recommendation = "ETL probably is successful. Running it again may cause data duplicity."
+                                                            text_color = "Red";
+                                                            btn_color = "Red";
+                                                        }else{
+                                                            recommendation = "ETL is complete, however data is still getting crawled. It is recommended to delete old data processed via ETL and wait for crawl to finish before running ETL again.";
+                                                            text_color = "Red";
+                                                            btn_color = "Red";
+                                                        }
+                                                    } else {
+                                                        if(timeDiff>=threshold_value){
+                                                            recommendation = "Go ahead. You may run the ETL.";
+                                                            text_color = "Green";
+                                                            btn_color = "Green";
+                                                        }else{
+                                                            recommendation = "Crawling still in progress. Running ETL may lead to incomplete data processing. Only proceed if you are sure data is fully crawled.";
+                                                            text_color = "Red";
+                                                            btn_color = "Red";
+                                                        }
+                                                    }
+                                                } else{
+                                                    if(state === "Success"){
+                                                        recommendation = "Looks like data isn’t there. Running ETL is not recommended as it will probably fail.";
+                                                        text_color = "Red";
+                                                        btn_color = "Red";
+                                                    }else if(state === "Failed"){
+                                                        recommendation = "Looks like data isn’t there. Running ETL is not recommended as it will probably fail.";
+                                                        text_color = "Red";
+                                                        btn_color = "Red";
+                                                    }
+                                                }   
+                                            }
+                                        }
+                                        //- ETL recommendation when state === "ETL not started yet"
+                                        else{
+                                            if(parseTime){
+                                                if(timeDiff >= threshold_value){
+                                                    recommendation = "Go ahead. You may run the ETL."
+                                                    text_color = "Green";
+                                                    btn_color = "Green";
+                                                } else{
+                                                    recommendation = "Crawling still in progress. Running ETL may lead to incomplete data processing. Only proceed if you are sure data is fully crawled.";
+                                                    text_color = "Red";
+                                                    btn_color = "Red";
+                                                }
+                                            } else {
+                                                recommendation = "Looks like data isn’t there. Running ETL is not recommended as it will probably fail.";
+                                                text_color = "Red";
+                                                btn_color = "Red";
+                                            }
+
+                                            //- If the flow hasn't been executed for once, get the flow data from prefect
+                                            document.getElementById("etl-now-btn").disabled = false;
+                                            document.getElementById("batch-flowrun-id").innerHTML = "ETL not started yet";
+                                            document.getElementById("batch-flowstatus").innerHTML = `<span class="badge badge-pill bg-secondary">${res.state}</span>`
+                                            document.getElementById("batch-flowid").innerHTML = res.flowid;
+
+                                        }
+                                        //- ---------ETL recommendation ends------------
+                                        //- show the recommendation message, and set the color of message and button
+                                        document.getElementById("batch-recommendation").innerHTML = recommendation;
+                                        document.getElementById("batch-recommendation").style["color"] = text_color;
+                                        document.getElementById("etl-now-btn").style["background-color"] = btn_color;
+                                    })
+                                    .catch((err) => console.log(err));
+                            })
+                            .catch((err) => console.log(err));
+
+
+                                //- show the recommendation message, and set the color of message and button
+                                document.getElementById("batch-recommendation").innerHTML = recommendation;
+                                document.getElementById("batch-recommendation").style["color"] = text_color;
+                                document.getElementById("etl-now-btn").style["background-color"] = btn_color;
+                    })
+                    .catch((err) => {
+                        alert("Please reach out to Keystone administrators. The ETL config is not defined. You need to add an ETL config for this parser pipeline.");
+                        console.log(err)
+                    });
+
+      
+                
+            });
+                
+            $("#modal-refresh").click(function(){
+                //- reset the recommendation,flow-run-id,current etl-status,batch-flowId
+                document.getElementById("batch-flowrun-id").innerHTML = '';
+                document.getElementById("batch-flowstatus").innerHTML = '';
+                document.getElementById("batch-flowid").innerHTML = '';
+                recommendation = '';
+                //- Get the number of records found
+                getTotalRecordsFound(databaseNameArray,batchId)
+                    .then((recordsObject) => {
+                        //- inject the number of record found into modal window
+                        let key_array = Object.keys(recordsObject);
+                        
+                        let value_array = Object.values(recordsObject);
+                        let final_data = [];
+
+                        for(let i=0;i<key_array.length;i++){
+                            final_data.push(`${key_array[i].toUpperCase() }`+" = "+`${value_array[i] }`)
+                        }
+
+                        document.getElementById("batch-recordsfound").innerHTML = final_data;
+                    })
+                    .catch((err) => console.log(err));
+
+                //- Get the recommended threshold and flow-name for ETL from etl-config collection in mongoDB
+                //- -------flow run start--------
+                getconfigByName(parserPipeline,pageType)
+                    .then((etlFlowData) => {
+                       //- get prefectServerId from incoming etl-config
+                        let prefectServerId = etlFlowData.ETLdata.prefectServerId;
+
+                        document.getElementById("batch-threshold").innerHTML = etlFlowData.ETLdata.threshold + " Seconds " + `(${secondsToHms(etlFlowData.ETLdata.threshold)} )`;
+
+                        let threshold_value = parseInt(document.getElementById("batch-threshold").innerHTML);
+
+                        document.getElementById("batch-flowname").innerHTML = flowName = etlFlowData.ETLdata.etlFlowName;
+                        //- get project name
+                        let projectName = etlFlowData.ETLdata.etlProjectName;
+
+                        searchType = document.getElementById(batchId).getAttribute("data-searchtype");
+                        pageType = document.getElementById(batchId).getAttribute("data-pagetype");
+
+                        //- for legacy jobs, who doesn't have page_type explicitly mentioned
+                        if(searchType === "keywords" && pageType === "undefined"){
+                            pageType = "serp";
+                            document.getElementById("batch-pagetype").innerHTML = pageType;
+                            document.getElementById(batchId).setAttribute("data-pagetype",pageType);
+                        }
+
+                        //- get latest fetch from parser collection's crawl time info.
+                        //- Call a function to internally hit mongoose collection `parser-collection` to get latest fetch time
+                        getParserData(batchId,parserCollectionName)
+                            .then((data) => {
+                                parseTime = data.parseTime;
+                                document.getElementById("etl-now-btn").disabled = false;
+
+                                if(data.timeDiff){
+                                    timeDiff = data.timeDiff;
+                                    let unixLastFetch = moment(parseTime).unix();
+                                    document.getElementById("batch-lastfetch").setAttribute("data-finaldate",unixLastFetch);
+                                    Timezone_Calc();
+                                    document.getElementById("batch-lastfetch").style["color"] = "Black";
+                                } else {
+                                    //- set the last fetch to "Not available yet" if timeDiff === "Not available yet";
+                                    document.getElementById("batch-lastfetch").innerHTML = "NOT AVAILABLE YET";
+                                    document.getElementById("batch-lastfetch").style["color"] = "RED";
+                                }
+                                //- Get flow-run-data from prefect and then combine the last-fetch status and flow-run-data to give
+                                //- ETL recommendation message.
+
+                                //- -------get flow run data from prefect--------
+
+                                //- Add getFlowRunData here so that once the flowname is received, it is passed to getFlowRunData function
+                                //- call a function to internally hit graphQL query to get current etl-status in the current project ONLY.
+
+                                getFlowRunData(batchId,flowName,projectName,prefectServerId)
+                                    .then((res) => {
+                                        if((Object.keys(res).length !== 0) && (res.state !== "ETL not started yet")) {
+                                            
+
+                                            document.getElementById("batch-flowrun-id").innerHTML = `<a href=${res.dashboardUri}/default/flow-run/${res.id} target=_new>${res.id}</a>`;
+
+                                            let state = res.state;
+                                            let badge_type;
+                                            if(state === "Success"){
+                                                badge_type = "success";
+                                            }else if(state === "Failed"){
+                                                badge_type = "danger"
+                                            }else if(state === "Running") {
+                                                badge_type = "warning"
+                                            }else {
+                                                badge_type = "secondary"
+                                            }                       
+
+                                            document.getElementById("batch-flowstatus").innerHTML = `<span class="badge badge-pill bg-${badge_type}">${res.state}</span>`
+                                            document.getElementById("batch-flowid").innerHTML = res.flowid;
+
+                                            //- -------ETL recommendation when it has been executed once before--------
+                                            //- i.e., state !== "ETL not strted yet"
+                                            //- Few cases of state are independent of parseTime such as
+                                            //- "Scheduled","Submitted" and "Running";
+
+                                            if(state === "Scheduled" || state === "Submitted" || state === "Running"){
+                                                recommendation = "ETL already in progress, Do not run as it may cause data duplicity.";
+                                                text_color = "Red";
+                                                btn_color = "Red";
+                                            }
+
+                                            //- check for the availability of "parseTime" in parser collection
+                                            //- check for the status of etl in prefect
+                                            //- check for the time-difference if it's equalto or greater thena threshold_value or not
+                                            //- after checking for all these value, set the recommendation message, recommendation message color and run-etl-now button color
+
+                                            //- check if recommendation message is already set or not
+                                            if(!recommendation){
+                                                if(parseTime && (state === "Success" || state === "Failed")){
+                                                    if(state === "Success"){
+                                                        if(timeDiff>=threshold_value){
+                                                            recommendation = "ETL probably is successful. Running it again may cause data duplicity."
+                                                            text_color = "Red";
+                                                            btn_color = "Red";
+                                                        }else{
+                                                            recommendation = "ETL is complete, however data is still getting crawled. It is recommended to delete old data processed via ETL and wait for crawl to finish before running ETL again.";
+                                                            text_color = "Red";
+                                                            btn_color = "Red";
+                                                        }
+                                                    } else {
+                                                        if(timeDiff>=threshold_value){
+                                                            recommendation = "Go ahead. You may run the ETL.";
+                                                            text_color = "Green";
+                                                            btn_color = "Green";
+                                                        }else{
+                                                            recommendation = "Crawling still in progress. Running ETL may lead to incomplete data processing. Only proceed if you are sure data is fully crawled.";
+                                                            text_color = "Red";
+                                                            btn_color = "Red";
+                                                        }
+                                                    }
+                                                } else{
+                                                    if(state === "Success"){
+                                                        recommendation = "Looks like data isn’t there. Running ETL is not recommended as it will probably fail.";
+                                                        text_color = "Red";
+                                                        btn_color = "Red";
+                                                    }else if(state === "Failed"){
+                                                        recommendation = "Looks like data isn’t there. Running ETL is not recommended as it will probably fail.";
+                                                        text_color = "Red";
+                                                        btn_color = "Red";
+                                                    }
+                                                }
+                                                
+                                            }
+                                        }
+                                        //- ETL recommendation when res.status === "ETL not started yet"
+                                        else{
+                                            if(parseTime){
+                                                if(timeDiff >= threshold_value){
+                                                    recommendation = "Go ahead. You may run the ETL."
+                                                    text_color = "Green";
+                                                    btn_color = "Green";
+                                                } else{
+                                                    recommendation = "Crawling still in progress. Running ETL may lead to incomplete data processing. Only proceed if you are sure data is fully crawled.";
+                                                    text_color = "Red";
+                                                    btn_color = "Red";
+                                                }
+                                            } else {
+                                                recommendation = "Looks like data isn’t there. Running ETL is not recommended as it will probably fail.";
+                                                text_color = "Red";
+                                                btn_color = "Red";
+                                            }
+
+                                            //- If the flow hasn't been executed for once, get the flow data from prefect
+                                            document.getElementById("etl-now-btn").disabled = false;
+                                            document.getElementById("batch-flowrun-id").innerHTML = "ETL not started yet";
+                                            document.getElementById("batch-flowstatus").innerHTML = `<span class="badge badge-pill bg-secondary">${res.state}</span>`
+                                            document.getElementById("batch-flowid").innerHTML = res.flowid;
+
+                                        }
+                                        //- ---------ETL recommendation ends------------
+                                        //- show the recommendation message, and set the color of message and button
+                                        document.getElementById("batch-recommendation").innerHTML = recommendation;
+                                        document.getElementById("batch-recommendation").style["color"] = text_color;
+                                        document.getElementById("etl-now-btn").style["background-color"] = btn_color;
+                                    })
+                                    .catch((err) => console.log(err));
+                            })
+                            .catch((err) => console.log(err));
+
+
+                                //- show the recommendation message, and set the color of message and button
+                                document.getElementById("batch-recommendation").innerHTML = recommendation;
+                                document.getElementById("batch-recommendation").style["color"] = text_color;
+                                document.getElementById("etl-now-btn").style["background-color"] = btn_color;
+                    })
+                    .catch((err) => {
+                        alert("Please reach out to Keystone administrators. The ETL config is not defined. You need to add an ETL config for this parser pipeline.");
+                        console.log(err)
+                    });
+
+                //- -------flow run ends---------
+                
+            });
+        });
+        
+    .myModal.modal.fade(role='dialog')
+        .modal-dialog.modal-dialog-centered.modal-dialog-scrollable.modal-lg
+            .modal-content
+                .modal-header
+
+                    h4.modal-title Run ETL
+                    button.btn.btn-warning(type="button" id="modal-refresh") Refresh
+                .modal-body
+                
+                    table.table-class
+                        tr
+                            th(style = "width:300px") Batch / Pipeline ID:
+                            td(id="batch-id")
+                        tr
+                            th Search Type:
+                            td(id="batch-pagetype")
+                        tr
+                            th Batch Started:
+                            td(id="batch-started",class="time")
+                        tr 
+                            th Last Fetch:
+                            td(id="batch-lastfetch",class="time")
+                        tr
+                            th Type OF ETL:
+                            td(id="batch-ETLtype")
+                        tr
+                            th Total Records Queried:
+                            td(id="batch-totalrecordsqueried")
+                        tr
+                            th Total Records Found: 
+                            td(id="batch-recordsfound")
+                        tr
+                            th ETL Recommended threshold: 
+                            td(id="batch-threshold")
+                        tr
+                            th ETL flow ID:
+                            td(id="batch-flowid")
+                        tr
+                            th ETL Flow Name to run: 
+                            td(id="batch-flowname")
+                        tr
+                            th Flow run ID:
+                            td(id="batch-flowrun-id" style = "text-decoration:underline;")
+                        tr
+                            th Current ETL Status: 
+                            td(id="batch-flowstatus")
+                        tr
+                            th ETL Recommendation: 
+                            td(id="batch-recommendation")
+
+                .modal-footer
+                    button.btn.btn-secondary(type='button' data-bs-dismiss='modal') Close
+                    button.btn.btn-secondary(type='button',id='etl-now-btn',disabled=true, onclick=`runETLnow()`) Run ETL Now
+
+    .modal.fade#allItemsModal()
+        .modal-dialog.modal-lg.modal-dialog-centered.modal-dialog-scrollable
+            .modal-content
+                .modal-header
+                    h4.modal-title Show All Items
+                    button.btn-close(type='button' data-bs-dismiss='modal')
+                .modal-body
+                    #allItemsDiv
+                .modal-footer
+                    button.btn.btn-secondary(type='button' data-bs-dismiss='modal') Close
+                    //- a.btn.btn-primary(onclick="copyToClipboard('#allItems');") Copy to Clipboard
+                    
+    script.
+        document.getElementById("searchVal").value ="#{search_field}"
+        //- $('#showAllItems').click(function(){
+        //-     $("#allItems").toggle();
+        //-     $(this).text( $(this).text() == 'Show Items' ? 'Hide Items' : 'Show Items' );
+        //- });
+        $(document).ready(function(){
+            $('#allItems').clone().appendTo('#allItemsDiv');
+            
+        });
+        

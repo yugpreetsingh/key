@@ -1,0 +1,155 @@
+doctype html
+html.h-100
+    head
+        title #{title} • Keystone
+        meta(name="description" content="")
+        meta(charset="utf-8")
+        meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+        link(rel='stylesheet', href='/css/bootstrap.min.css')
+        link(rel='stylesheet', href="/css/sidebar.css")
+        link(rel='stylesheet', href='/css/common.css')
+        link(rel='stylesheet', href='/css/textavatar.css')
+        link(rel='stylesheet', href='/css/font-awesome.min.css')
+        link(rel='stylesheet', href='/css/select2.min.css')
+       
+        
+        script(src="/js/jquery-3.6.1.min.js")
+        script(src="/js/bootstrap.bundle.min.js")
+        script(src="/js/common.js")
+        //- script(src="/js/select2.min.js")
+        //- script(src="/js/bootstrap-select.min.js")
+        script(src="/js/jquery.textavatar.js")
+        //- script(src="/js/textavatar.js")
+        script(src="/js/bootbox.min.js")
+        script(src="/js/moment.min.js")
+        script(src="/js/moment-timezone-with-data.min.js")
+        script(src="/js/select2.min.js")
+        
+        script.
+            $(document).ready(function(){
+
+                //- var nH = $(".header").outerHeight();
+                //- //-  alert(nH);
+                //- $("#container").css("padding-top",nH);
+
+                Timezone();
+                sideBar();
+                Timezone_Calc();
+
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl)
+                })
+
+                $('.textavatar').textAvatar();
+
+                $('input').on('keyup keydown keypress change', function() {
+                    var name = $('#name').val();
+                    var size = $('#size').val();
+                    $('#test').textAvatar({
+                        name: name,
+                        width: size
+                    });
+                });
+                $(".sidebar-dropdown > a").click(function() {
+                    $(this).toggleClass('arrowUp');
+                    $(".sidebar-submenu").toggleClass( "d-none", 5000, "easeOutSine" );
+                });
+
+                $("#close-sidebar").click(function() {
+                    $(".page-wrapper").toggleClass("toggled");
+                });
+                $("#show-sidebar").click(function() {
+                    $(".page-wrapper").addClass("toggled");
+                    
+                });
+
+               
+            });
+            function sideBar(){
+                if($(window).width() < 921){
+                    $(".page-wrapper").removeClass("toggled");
+                    //alert($(window).width);
+                }
+                else{
+                    $(".page-wrapper").addClass("toggled");
+                }
+            }
+
+            $(window).resize(function(){
+                sideBar();
+            });
+
+    body.d-flex.flex-column.h-100.page-wrapper.chiller-theme.toggled
+
+        block header
+            header
+                //- Fixed navbar
+                nav.navbar.navbar-expand-md.navbar-dark.fixed-top.bg-dark.header
+                    .container-fluid
+                        a.navbar-brand(href="/")
+                            | Keystone
+                        if (session.passport)
+                            a#close-sidebar.ms-auto.ms-sm-3(href="javascript:void(0);")
+                                i.fa.fa-reorder
+                        button(class="navbar-toggler border-0 ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#bdNavbar" aria-controls="bdNavbar" aria-expanded="false") 
+                            i.fa.fa-ellipsis-v
+                        div.ms-sm-auto#bdNavbar.navbar-collapse.collapse.justify-content-end
+                            .d-flex.align-items-sm-center.flex-sm-row.flex-column
+                                if (session.passport)
+                                    form(id = "searchForm" style="margin-left:0.5em;" name="search" method="get" action="/search")
+                                        .input-group.input-group-sm
+                                            input(class="form-control form-control-sm" name = "id" id= "searchVal" type="search" placeholder="Search by Id or Name" aria-label="Search" style="width:16em;")
+                                            button(class="btn btn-light me-sm-2",type="submit" id ="searchId" ) 🔍
+                                    form
+                                        select(class="js-Selector form-select form-select-sm" style = "width:18.2em;")
+                                    div.mt-2.text-white.d-block.d-sm-none #{session.passport.user.displayName} 
+                                        a.ms-4(href='/auth/logout') Sign out
+                                    .dropdown.ms-2.mt-2.mt-sm-0.d-none.d-sm-block
+                                        a#dropdownUser1.d-flex.align-items-center.link-dark.text-decoration-none.dropdown-toggle(href='#' title=`${session.passport.user.email}` data-bs-toggle='dropdown' aria-expanded='false')
+                                            span.textavatar(style='width: 30px;' data-name=`${session.passport.user.email}`)
+                                            //- img.rounded-circle(src='https://github.com/mdo.png' alt='mdo' width='32' height='32')
+                                        ul.dropdown-menu.dropdown-menu-end.text-small(aria-labelledby='dropdownUser1' style='')
+                                            li
+                                                a.dropdown-item(href='#' title=`${session.passport.user.email}`) #{session.passport.user.displayName}
+                                            li
+                                                hr.dropdown-divider
+                                            li
+                                                a.dropdown-item(href='/auth/logout') Sign out
+                                else
+                                    span
+                                        //- a.btn.btn-primary(href="/auth/login") Login
+
+        block mainbody
+            main.flex-shrink-0.page-content#main-wrapper(role="main")
+                div.container-fluid#container
+                    if (session.passport)
+                        include ../layouts/sidebar.pug
+                        block messages
+                            if showError && showError.length > 0
+                                div(class="alert alert-danger  alert-dismissible" role ="alert") #{showError}
+                                    button(type="button",class="btn-close",data-bs-dismiss="alert",aria-label="Close")
+                            if showUnsafeError && showUnsafeError.length > 0
+                                div(class="alert alert-danger alert-dismissible" role ="alert")!= `${showUnsafeError}`
+                                    button(type="button",class="btn-close",data-bs-dismiss="alert",aria-label="Close")        
+                            if showSuccess && showSuccess.length > 0
+                                div(class="alert alert-success alert-dismissible"  role ="alert")  #{showSuccess}
+                                    button(type="button",class="btn-close",data-bs-dismiss="alert",aria-label="Close")   
+                            if showUnsafeSuccess && showUnsafeSuccess.length > 0
+                                div(class="alert alert-success alert-dismissible"  role ="alert")!= `${showUnsafeSuccess}`
+                                    button(type="button",class="btn-close",data-bs-dismiss="alert",aria-label="Close")
+                    block content
+                        p default content
+                    
+                    //- block extraspacing
+                    //-     div(style="height:100px")
+            
+                    div(class="js-TimeUtc" style = "visibility:hidden")
+                    span(style="display:none" class = "time")
+            
+                block footer
+                    footer.footer.mt-auto.py-3.fixed-bottom
+                        div.container
+                            - let current_year = new Date().getFullYear()
+                            span.text-muted.small
+                                | &copy; 2020-#{current_year}, EGrowth Technologies LLP. All Rights Reserved.

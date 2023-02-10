@@ -1,0 +1,130 @@
+extends ../layouts/master.pug
+
+block content
+    h2.d-flex.flex-column.flex-sm-row.justify-content-between
+        div
+            | Jobs List for 
+            span.text-danger #{clientDetails.name}
+        a.mt-3.mt-sm-0(href=`/jobs/${clientDetails.id}/addNew`,class="btn btn-dark") Create &amp; Schedule New Job
+    h6 Total Active Jobs - #{jobs.length}
+    h2.d-flex.flex-column.flex-sm-row.justify-content-between
+        div
+            a(class="btn btn-sm btn-primary me-2" href=`/jobs/hidden/${clientDetails.id}` style="postition:absolute;") Display Hidden Jobs
+    if jobs.length > 0
+        .table-responsive
+            table(class="table table-striped table-sm table-hover" style ="table-layout: auto; width: 100px:")
+                thead(class="thead-dark")
+                    tr()
+                        th(scope="col") #
+                        th(scope="col") Name
+                        th(scope="col") Added On
+                        th(scope="col") Parser Pipeline
+                        th(scope="col") Frequency
+                        th(scope="col" width="100") Total Runs
+                        th(scope="col") Last Run
+                        th(scope="col")| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Action
+
+                tbody
+                - let i = 0
+                each job in jobs
+                    - i = i+1
+                    tr
+                        th(scope="row") #{i}
+                        td
+                            if job.jobType === 'ContentScore'
+                                a(href=`/jobs/${clientDetails.id}/${job._id}/details`,data-bs-toggle="tooltip",data-bs-placement="bottom",title="View Job Details") #{job.name} &nbsp;
+                                span(class="badge badge-pill bg-primary" ) ContentScore
+                            else
+                                a(href=`/jobs/${clientDetails.id}/${job._id}/details`,data-bs-toggle="tooltip",data-bs-placement="bottom",title="View Job Details") #{job.name}
+                            br
+                            small (#{job._id})
+                        - let finalDate = moment.tz(job.createdAt,timezone)
+                        - finalDate =  finalDate.unix()
+                        td 
+                            span(class = "time", data-finalDate = `${finalDate}`)
+                        td
+                            if job.parser 
+                                p #{job.parser.pipeline} (#{job.parser.startingSpider})
+                            else 
+                                p #{job.parserPipeline} (#{job.parserStartingSpider})
+                        td #{job.frequencyReadable}
+                        td
+                            a(href=`/jobs/${clientDetails.id}/${job._id}/details#runs`,data-bs-toggle="tooltip",data-bs-placement="bottom",title="See All Runs") #{job.totalRuns}
+                        td
+                            - let date = moment.tz(job.lastRunBatchId.createdAt,timezone)
+                            - date =  date.unix()
+                            //- - let day1 =  moment.tz(job.lastRunBatchId.createdAt,timezone).format('dddd')
+                            - let date2 = moment(job.lastRunBatchId.createdAt).fromNow()
+                            if Object.keys(job.lastRunBatchId).length > 0
+                                
+                                //- - let date2 = moment(job.lastRunBatchId.createdAt).fromNow()
+                                //- - let date = moment(job.lastRunBatchId.createdAt).format('DD-MMM-YYYY LTS ')
+                                a(href=`/jobs/${clientDetails.id}/${job._id}/results/${job.lastRunBatchId._id}`,data-bs-toggle="tooltip",data-bs-placement="bottom",title="See Results") #{date2} 
+                                br
+                                small  &nbsp;
+                                        span(class = "time", data-finalDate = `${date}`)
+                                    
+                            else
+                                span Never
+                        td
+                            div(style = "display:flex; text-align: center;white-space: nowrap;margin-top:4px;")
+                                //- a(href=`/jobs/${clientDetails.id}/${job._id}/details`,class="btn btn-dark btn-sm") Details
+                                //- | &nbsp;
+                                
+                                
+                                - const frequencyValue = (job.frequency.type === "scheduled") ? `${job.frequency.day}|${job.frequency.times.map(time => `${time.hours.toString().padStart(2,'0')}${time.minutes !== 0 ? ':'+time.minutes.toString().padStart(2,'0') : ''}`).join(',')}` : "ondemand"
+                                //- input(type="button",class="btn btn-secondary btn-sm",data-bs-toggle="modal",data-job-name=`${job.name}`,data-job-id=`${job._id}`,data-frequency=`${frequencyValue}`,onclick="changeFrequencyModal('frequencyChangeModal',this)",value="Change Frequency")
+                                a.btn.btn-success.btn-sm.me-1(href=`/jobs/${clientDetails.id}/${job._id}/run` data-bs-toggle="tooltip" data-bs-placement="top" title="Run") &#x25B7; Run
+                                button(type="button",class="btn btn-sm btn-secondary me-2",data-bs-toggle="modal",data-job-id=`${job._id}`,data-bs-target="#frequencyChangeModal",data-job-name=`${job.name}`,data-frequency=`${frequencyValue}`, onclick="changeFrequencyModal('frequencyChangeModal',this)") Change Frequency
+                                
+                                a.btn.btn-dark.btn-sm.me-1(href=`/jobs/${clientDetails.id}/editJob/${job._id}` data-bs-toggle="tooltip" data-bs-placement="top" title="Edit")  
+                                    i.fa.fa-pencil
+                                a.btn.btn-danger.btn-sm.me-1(href=`/jobs/${clientDetails.id}/hideJob/${job._id}` onclick=`return confirm('Are you sure you want to hide the job "${job.name}" of client ${clientDetails.name} (${clientDetails.id}) ?')` data-bs-toggle="tooltip" role="button" data-bs-placement="top" title="Hide")
+                                    i.fa.fa-eye-slash
+                                
+    else
+        p No jobs available
+    //- a(href=`/jobs/${clientDetails._id}/addNew`,class="btn btn-primary") Create &amp; Schedule New Job
+    //- a(href=`/jobs/${clientDetails.id}/addNew`,class="btn btn-primary") Create &amp; Schedule New Job
+
+    div(class="modal fade",id="frequencyChangeModal",tabindex="-1",role="dialog",aria-labelledby="frequencyChangeModalLabel",aria-hidden="true")
+        div(class="modal-dialog",role="document")
+            div(class="modal-content")
+                div(class="modal-header")
+                    h5(class="modal-title",id="frequencyChangeModalLabel") Change Frequency
+                    button(type="button",class="close",data-bs-dismiss="modal",aria-label="Cancel")
+                        span(aria-hidden="true") &times;
+                form(action=`/jobs/${clientDetails.id}/updateFrequency`,method="post")
+                    input(type="hidden",value="",id="changeJobId",name="changeJobId")
+                    div(class="modal-body")
+                        span Job Name : 
+                        strong#showJobName
+                        br
+                        small#showJobId
+                        br
+                        br
+                        strong Set New Frequency
+                        br  
+                        select(name="changeFrequency",id="changeFrequency",class="form-select")
+                            option(value="ondemand") On Demand
+                            option(value="*|04:30,08:30,12:30,16:30") Everyday at 10am, 2pm, 6pm, 10pm IST
+                            option(value="*|02:30,08:30,11:30,16:30") Everyday at 8am, 2pm, 5pm, 10pm IST
+                            option(value="*|02") Everyday at 7:30am IST (runs at 2am UTC)
+                            option(value="*|03") Everyday at 8:30am IST (runs at 3am UTC)
+                            option(value="*|04") Everyday at 9:30am IST (runs at 4am UTC)
+                            option(value="*|05:30") Everyday at 11am IST
+                            option(value="*|06") Everyday at 11:30am IST
+                            option(value="*|06:30") Everyday at 12pm IST
+                            option(value="*|09:30") Everyday at 3pm IST
+                            option(value="*|10:30") Everyday at 4pm IST
+                            option(value="*|11:30") Everyday at 5pm IST
+                            option(value="*|00,06,12,18") Every 6 Hours (runs at 12am, 6am, 12pm, 6pm UTC)
+                            option(value="*|03,09,15,21") Every 6 Hours (runs at 3am, 9am, 3pm, 9pm UTC)
+                            option(value="*|12") Every 24 Hours (runs at 12pm UTC)
+                            option(value="*|00") Every 24 Hours (runs at 12am UTC)
+                            option(value="*|06") Every 24 Hours (runs at 6am UTC)
+                            option(value="*|18") Every 24 Hours (runs at 6pm UTC)
+                            option(value="3|00") Weekly (runs every Wednesday at 12am UTC)
+                    div(class="modal-footer")
+                        input(type="button",class="btn btn-secondary",data-bs-dismiss="modal",value="Cancel")
+                        input(type="submit",class="btn btn-primary",value="Update Frequency")

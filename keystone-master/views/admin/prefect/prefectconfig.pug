@@ -1,0 +1,52 @@
+extends ../../layouts/master.pug
+
+block content
+    div(class="prefectconfig")
+        h2.d-flex.justify-content-between.flex-column.flex-sm-row
+            | Please enter the Prefect Config details below.
+            //- a.mt-3.mt-sm-0(href='/prefectconfig/getallconfig',class="btn btn-dark") Get Prefect Config
+        form#prefectconfigdata
+            .row.mb-3
+                .col-4
+                    label(for='prefectservername') Prefect server name
+                .col-8
+                    input#prefectservername.form-control.server-name(type='text' name='prefectservername' placeholder='Enter prefect server name' autocomplete="off")
+
+            .row.mb-3
+                .col-4
+                    label(for='prefectdashboarduri') Prefect dashboard URL
+                .col-8
+                    input#prefectdashboarduri.form-control.dashboard-uri(type='text' name='prefectdashboarduri'  placeholder='Enter prefect dashboard URL' autocomplete="off")
+
+            .row.mb-3
+                .col-4
+                    label(for='apollouri') Apollo server URL
+                .col-8
+                    input#apollouri.form-control.apollo-uri(type='text' name='apollouri' placeholder='Enter apollo server URL' autocomplete='off')
+
+            .row.mb-3
+                .col-4
+                    label(for='prefectservercomment') Prefect server comment
+                .col-8
+                    input#prefectservercomment.form-control.server-comment(type='text' name='prefectservercomment' placeholder='Enter any comments(or, message) for this server' autocomplete='off')
+            .row
+                .col-4 &nbsp;
+                .col-8
+                    button.btn.btn-primary(type='submit' id='prefectconfigsubmit') Submit
+
+
+
+    script.
+        
+        const prefectServerForm = document.getElementById("prefectconfigdata");
+
+        prefectServerForm.onsubmit = async (event) => {
+            event.preventDefault();
+
+            let serverName = document.getElementById("prefectservername").value;
+            let dashboardUri = document.getElementById("prefectdashboarduri").value;
+            let apolloUri = document.getElementById("apollouri").value;
+            let serverComment = document.getElementById("prefectservercomment").value;
+            
+            addPrefectConfig(serverName,dashboardUri,apolloUri,serverComment);
+        };

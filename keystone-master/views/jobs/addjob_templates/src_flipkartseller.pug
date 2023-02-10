@@ -1,0 +1,209 @@
+div(id="flipkartseller",class="",style="display:none")
+    div(class="mb-3 row")
+        label(for="sourceData[flipkartseller][data]",class="col-sm-4 col-form-label") List of Products
+            ul.form-text
+                li One Per Line
+                li Product ID to be added
+                li Example:
+                    pre.
+                        TMREW2GVGCGNSB73
+                        HSTFY5B2HVFHXFSM
+        .col-sm-5
+            textarea(name="sourceData[flipkartseller][data]",id="sourceData[flipkartseller][data]",class="form-control",rows="10",onchange="countLines(this.id,'asinLinesFK')",onkeyup="countLines(this.id,'asinLinesFK')")= job.source.modifiedData
+            div.mt-2
+                input(type="button",value="Clean Up (Sort and Unique)",class="btn btn-sm btn-warning",onclick="cleanText('sourceData[flipkartseller][data]')") 
+                span.mt-2
+                    strong
+                        span  Products Found: 
+                        span#asinLinesFK
+                script.
+                    countLines('sourceData[flipkartseller][data]','asinLinesFK')
+
+    div(class="mb-3 row")
+        label(for="sourceData[flipkartseller][domain]",class="col-sm-4 col-form-label") Search Domain
+        .col-sm-5
+            - let domain_flipkartseller = job.source.domain
+            select(name="sourceData[flipkartseller][domain]",id="sourceData[flipkartseller][domain]",class="form-select",autocomplete="off",onclick=`showDomainFlipkartSeller(this.value,${editing}),currentBrowserFlipkartSeller("${domain}","${browser}",${editing})`)
+                - let all_flipkartseller = []
+                each domain in domain_info
+                    if domain.crawlerType == "flipkartseller"
+                        - all_flipkartseller.push(domain.domainNickName)
+                - all_flipkartseller.sort()
+                each domain_nick_name in all_flipkartseller
+                    each mydomain in domain_info 
+                        if mydomain.crawlerType == "flipkartseller" && mydomain.domainNickName == domain_nick_name
+                            option(value = `${mydomain.domainName}`,selected = domain_flipkartseller == `${mydomain.domainName}`) #{mydomain.domainNickName}
+                //- option(value="FLIPKART.COM") Flipkart.com
+    div(class="mb-3 row")
+        label(for="sourceData[flipkartseller][crawlinglanguage]",class="col-sm-4 col-form-label") Default Crawling Language
+        .col-sm-5
+            - let crawler_language_flipkartseller = job.source.crawlinglanguage
+            select(name="sourceData[flipkartseller][crawlinglanguage]",id="sourceData[flipkartseller][crawlinglanguage]",class="form-select",autocomplete="off")
+                option(value="",selected = crawler_language_flipkartseller == "") English (where applicable)
+                option(value="native",selected = crawler_language_flipkartseller == "native") Native Language
+    div(class="mb-3 row")
+            label(for="sourceData[flipkartseller][batchsize]",class="col-sm-4 col-form-label") Batch Size
+                .form-text
+                    ul
+                        li Ideally Batch Size for Flipkart Seller Job is 1
+                        li Only Positive Number can be provided as input
+            .col-sm-5
+                input(type = "number", min = "1", list="sourceData[flipkartseller][batchsize]", name="sourceData[flipkartseller][batchsize]", class = "form-control", value = `${batchsize}`,autocomplete = "off", placeholder = "Input Custom Batch Size or Select from the List")
+                datalist(name="sourceData[flipkartseller][batchsize]",id="sourceData[flipkartseller][batchsize]")
+                    option(value = 1) For Flipkart Seller Type Job            
+    div(class="mb-3 row")
+        label(for="sourceData[flipkartseller][browser]",class="col-sm-4 col-form-label") Browser Interface
+        .col-sm-5
+            select(name="sourceData[flipkartseller][browser]",id="sourceData[flipkartseller][browser]",class="form-select",autocomplete="off")
+                //- option(value="desktop") Desktop
+                //- option(disabled, value="mobile") Mobile
+
+    div(class="mb-3 row")
+        label(for="sourceData[flipkartseller][screenshot]",class="col-sm-4 col-form-label") Save a Screenshot
+            ul.form-text
+                li Please keep in mind that each screenshot will take up additional disk space apart from the product page
+        .col-sm-5
+            select(name="sourceData[flipkartseller][screenshot]",id="sourceData[flipkartseller][screeshot]",class="form-select",autocomplete="off")
+                option(value="false") No. Screenshot not required.
+                option(disabled,value="true") Yes. Screenshot is required.
+
+    div(class="mb-3 row")
+        label(for="sourceData[flipkartseller][proxytype]",class="col-sm-4 col-form-label") Proxy Type
+        .col-sm-5
+            - let proxies = job.source.proxytype
+            select(name="sourceData[flipkartseller][proxytype]",id="sourceData[flipkartseller][proxytype]",class="form-select",autocomplete="off")
+                option(value="datacenter",selected = proxies == "datacenter") Data Center
+                option(value="hybrid",selected = proxies == "hybrid") Data Center, Failover Residential
+                option(value="residential",selected = proxies == "residential") Residential (Higher Costing)
+    
+    div(class="mb-3 row")
+        label(for="sourceData[flipkartseller][sellerinfo]",class="col-sm-4 col-form-label") Get Seller Information
+            ul.form-text
+                li Generally for Seller Information, the Residential IPs will be  used
+        .col-sm-5
+            - let sellerinfo = job.source.sellerinfo
+            select(name="sourceData[flipkartseller][sellerinfo]",id="sourceData[flipkartseller][sellerinfo]",class="form-select",autocomplete="off")
+                option(value="false", selected = sellerinfo == false) No, Seller Information is not required
+                option(value="true", selected = sellerinfo == true) Yes, get Seller Information
+    script.
+        let selectedDomainFlipkartseller
+        //- Search in Domain dropdown
+        $(document).ready(function()  
+        {
+            $('#sourceData\\[flipkartseller\\]\\[domain\\]').select2({width:'100%'});
+            $('#sourceData\\[flipkartseller\\]\\[domain\\]').one('select2:open', function(e) {
+                $('input.select2-search__field').prop('placeholder', 'Search Domain Here');
+            });
+        });
+        //- ! Below Comments are must read before any editing performed and in understanding the Code!
+        //- ! Making "selectedDomainFlipkartseller" a global variable to access it in the below functions.
+        function showDomainFlipkartSeller(currentDomain,isEditing){
+            //-!  The value of selectedDomainFlipkartseller is declared as global variable and is used in the below currentBrowserFlipkartSeller function.Because not able to retrive the current value from same function(currentBrowserFlipkartSeller()).
+            selectedDomainFlipkartseller = currentDomain
+        } 
+            //- ! The 'domain' argument in the below function is used to populate the domain while clicking on edit button which outputs to prefilled Job form.
+        function currentBrowserFlipkartSeller(domain,browser,editing){
+                //-? Only domain passed in the above function is current value while browser and editing is fetched from the backend db collection where job is saved.
+                //- * Storing all the domain information below after stringifying in variable allDomainInformation.
+                let allDomainInformation = !{JSON.stringify(domain_info)}
+                if(editing == false) {
+                    //- * Emptying the browsers value on changing the domain which triggers the function again. Without
+                    //- * emptying the browser interface getting stacked.
+                    $('#sourceData\\[flipkartseller\\]\\[browser\\]').html("")
+                    //- * Currently selected domain is consoled below.Selected means selected from dropdown.
+                    console.log("Current domain selected for crawler type Flipkartseller is",selectedDomainFlipkartseller)
+                    for(let row of allDomainInformation){
+                        //- ? While adding the job after selecting the domain populating the browserInterface.
+                        if (row.crawlerType=="flipkartseller" && row.domainName==selectedDomainFlipkartseller)
+                        {
+                            if(row.browserInterface[0] == "desktop"){
+                                document.getElementById("sourceData[flipkartseller][browser]").append(new Option("Desktop","desktop"));
+                            }
+                            if(row.browserInterface[0] == "mobile"){
+                                document.getElementById("sourceData[flipkartseller][browser]").append(new Option("Mobile","mobile"));
+                            }   
+                            if(row.browserInterface[1] == "mobile"){
+                                document.getElementById("sourceData[flipkartseller][browser]").append(new Option("Mobile","mobile"));
+                            }
+                            if(row.browserInterface[1] == "desktop"){
+                                document.getElementById("sourceData[flipkartseller][browser]").append(new Option("Desktop","desktop"));
+                            }
+                        }
+                    }
+                }
+                else if(editing == true){
+                    console.log("Current selected domain for crawler Type Flipkartseller is",domain,"and saved browser before editing is",browser,"with editing status",editing)
+                    //- * Emptying the browsers value on change which triggers the function again. Without
+                    //- * emptying the browser interface get stacked.
+                    $('#sourceData\\[flipkartseller\\]\\[browser\\]').html("")
+                    for(let row of allDomainInformation){
+                        if ((row.crawlerType=="flipkartseller" && row.domainName==selectedDomainFlipkartseller)){  
+                            let browsers = row.browserInterface
+                            //- Below console gives the value of browsers for the given domain in an array when selected during updating the edit job form. 
+                            console.log("Browser Interface available for selected domain of flipkartseller crawler type are "+ browsers)
+                            if(browsers.length == 1){
+                                let current_browser = browsers[0]
+                                if (current_browser == "desktop")
+                                    { 
+                                        document.getElementById("sourceData[flipkartseller][browser]").append(new Option("Desktop","desktop"));
+                                    }
+                                if (current_browser == "mobile")
+                                    {
+                                        document.getElementById("sourceData[flipkartseller][browser]").append(new Option("Mobile","mobile"));   
+                                    }
+                            }
+                            else if(browsers.length == 2){
+                                //-    ?  If browser contains 2 interfaces (mobile and desktop) then populating browser Interface is slightly diffrent.
+                                //-     ? The below code handles the situations if while adding the browser Interface on Keystone under New Crawler section whether the sequence is <desktop mobile> or <mobile desktop>.
+                                let current_browser1
+                                let current_browser2
+                                if(browsers[0] == "mobile" && browsers[1] == "desktop"){
+                                    current_browser1 = "mobile"
+                                    current_browser2 = "desktop"
+                                }
+                                else if(browsers[0] == "desktop" && browsers[1] == "mobile"){
+                                    current_browser1 = "desktop"
+                                    current_browser2 = "mobile"
+                                }
+                                //- ? Always ensuring the value of given domain from frontend is equal to "mobile" and "desktop" only with ANY SEQUENCE.
+                                if (domain == selectedDomainFlipkartseller && browser ==  "desktop" && current_browser2=="mobile" && current_browser1 == "desktop"){
+                                        document.getElementById("sourceData[flipkartseller][browser]").append(new Option("Desktop","desktop",null,true));
+                                        document.getElementById("sourceData[flipkartseller][browser]").append(new Option("Mobile","mobile"));
+                                }
+                                else if (domain == selectedDomainFlipkartseller && browser ==  "desktop" && current_browser2=="desktop" && current_browser1 == "mobile"){
+                                        document.getElementById("sourceData[flipkartseller][browser]").append(new Option("Desktop","desktop",null,true));
+                                        document.getElementById("sourceData[flipkartseller][browser]").append(new Option("Mobile","mobile"));
+                                }
+                                else if (domain == selectedDomainFlipkartseller && browser == "mobile" && current_browser2 == "desktop" && current_browser1 == "mobile"){
+                                        document.getElementById("sourceData[flipkartseller][browser]").append(new Option("Mobile","mobile",null,true));
+                                        document.getElementById("sourceData[flipkartseller][browser]").append(new Option("Desktop","desktop"));
+                                }
+                                else if (domain == selectedDomainFlipkartseller && browser == "mobile" && current_browser2 == "mobile" &&  current_browser1 == "desktop"){
+                                        document.getElementById("sourceData[flipkartseller][browser]").append(new Option("Mobile","mobile",null,true));
+                                        document.getElementById("sourceData[flipkartseller][browser]").append(new Option("Desktop","desktop"));
+                                }
+                                //-?
+
+                                //- ? In case of updating to new domain there are only two possiblites as in the below code
+                                else if(domain != selectedDomainFlipkartseller && current_browser1 == "desktop" && current_browser2 == "mobile" ){
+                                        //- console.log("New Domain")
+                                        document.getElementById("sourceData[flipkartseller][browser]").append(new Option("Desktop","desktop",null,true));
+                                        document.getElementById("sourceData[flipkartseller][browser]").append(new Option("Mobile","mobile"));
+                                }
+                                else if(domain != selectedDomainFlipkartseller &&  current_browser1 == "mobile" && current_browser2 == "desktop"){
+                                        document.getElementById("sourceData[flipkartseller][browser]").append(new Option("Mobile","mobile"));
+                                        document.getElementById("sourceData[flipkartseller][browser]").append(new Option("Desktop","desktop",null,true));
+                                }
+                            }
+                        }
+                    }
+                }
+        }
+        //- showDomainFlipkartSeller function below is called only when the page loads on adding and editing.It brings value of current domain
+        //- Flipkartseller crawler which in turn sets the value of browser Interface.
+        showDomainFlipkartSeller($("#sourceData\\[flipkartseller\\]\\[domain\\]").val(),!{editing});  //-?This finds the current value of top most domain for selected Type of Crawler.
+        $('#sourceData\\[flipkartseller\\]\\[domain\\]').on('select2:select', function (e) {
+            //- Calling the functions when the value from domain dropdown is changed.
+            showDomainFlipkartSeller($("#sourceData\\[flipkartseller\\]\\[domain\\]").val(),!{editing});  //-?This finds the current value of top most domain for selected Type of Crawler.
+            currentBrowserFlipkartSeller($("#sourceData\\[flipkartseller\\]\\[domain\\]").val(),"!{browser}",!{editing}); //-? From the value of Domain received the function sets the value of browser Interface
+            });

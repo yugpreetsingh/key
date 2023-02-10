@@ -1,0 +1,17 @@
+extends ../layouts/master.pug
+
+block content
+   
+    h2 Job Status for #{clientDetails.name}
+    
+    div(class="alert alert-success")
+        ul
+            li Scrapy Execution Server: 
+                strong #{result.server} (Node: #{result.response.node_name})
+            li Response: 
+                strong #{result.response.status}
+            li Job ID: 
+                strong #{result.response.jobid}
+
+
+    a(href=`/jobs/${clientDetails.id}/results/${result.response.jobid}`,class="btn btn-primary btn-lg") View Results

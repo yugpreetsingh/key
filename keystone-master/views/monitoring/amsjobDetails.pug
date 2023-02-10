@@ -1,0 +1,32 @@
+extends ../layouts/master.pug
+
+block content
+    h2 
+        p Detailed information on AMS and Selling Partner Jobs
+    h5
+        p The below table will assist in figuring out the time of job run for a given client
+    div
+        - var i=1;
+        div(style="width:99%;margin: 0 auto;" class="scroll")
+            table(class="table table-striped table-hover table-lg",id="results")
+                if columns
+                    thead
+                        tr
+                            th S.No.
+                            each value, key in columns
+                                th=value 
+                                th &emsp;
+
+                    tbody
+                        each result in rows 
+                            tr
+                                td #{i} 
+                                each value, key in columns
+                                    td(nowrap) #{result[value]}
+                                    td(nowrap) &emsp;  
+                                - i = i+1
+        style.
+            div.scroll {
+            overflow: auto;
+            white-space: wrap;
+            }
